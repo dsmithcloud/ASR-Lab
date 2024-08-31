@@ -1,12 +1,16 @@
+param endpoint1Target string
+param endpoint2Target string
+param profileName string
+
 // Define the Traffic Manager profile
 resource trafficManager 'Microsoft.Network/trafficManagerProfiles@2018-04-01' = {
-  name: 'myTrafficManagerProfile'
+  name: profileName
   location: 'global'
   properties: {
     profileStatus: 'Enabled'
     trafficRoutingMethod: 'Priority'
     dnsConfig: {
-      relativeName: 'mytrafficmanager'
+      relativeName: profileName
       ttl: 30
     }
     monitorConfig: {
@@ -19,7 +23,7 @@ resource trafficManager 'Microsoft.Network/trafficManagerProfiles@2018-04-01' = 
         name: 'endpoint1'
         type: 'Microsoft.Network/trafficManagerProfiles/externalEndpoints'
         properties: {
-          target: 'vm1.region1.cloudapp.azure.com'
+          target: endpoint1Target
           endpointStatus: 'Enabled'
           priority: 1
         }
@@ -28,7 +32,7 @@ resource trafficManager 'Microsoft.Network/trafficManagerProfiles@2018-04-01' = 
         name: 'endpoint2'
         type: 'Microsoft.Network/trafficManagerProfiles/externalEndpoints'
         properties: {
-          target: 'vm2.region2.cloudapp.azure.com'
+          target: endpoint2Target
           endpointStatus: 'Enabled'
           priority: 2
         }

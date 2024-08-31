@@ -11,3 +11,5 @@ resource recoveryServicesVault 'Microsoft.RecoveryServices/vaults@2022-02-01' = 
     tier: sku.tier
   }
 }
+
+output vaultName string = recoveryServicesVault.name

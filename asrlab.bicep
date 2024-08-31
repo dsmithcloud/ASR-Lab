@@ -126,6 +126,44 @@ module vnet2 './vnet.bicep' = {
   }
 }
 
+module publicIp1 './pip.bicep' = {
+  name: '${sourceRGconfig.location}-pip'
+  scope: sourceRG
+  params: {
+    vmName: sourceVmConfig.vmName
+    location: sourceRGconfig.location
+  }
+}
+
+module publicIp2 './pip.bicep' = {
+  name: '${targetRGconfig.location}-pip'
+  scope: targetRG
+  params: {
+    vmName: sourceVmConfig.vmName
+    location: targetRGconfig.location
+  }
+}
+
+module nsg1 './nsg.bicep' = {
+  name: '${sourceVmConfig.vmName}-${sourceRGconfig.location}-nsg'
+  scope: sourceRG
+  params: {
+    vmName: sourceVmConfig.vmName
+    location: sourceRGconfig.location
+    myIp: myhomeip
+  }
+}
+
+module nsg2 './nsg.bicep' = {
+  name: '${sourceVmConfig.vmName}-${targetRGconfig.location}-nsg'
+  scope: targetRG
+  params: {
+    vmName: sourceVmConfig.vmName
+    location: targetRGconfig.location
+    myIp: myhomeip
+  }
+}
+
 module sourceVm './vm.bicep' = {
   name: sourceVmConfig.vmName
   scope: sourceRG
@@ -136,13 +174,27 @@ module sourceVm './vm.bicep' = {
     osProfile: sourceVmConfig.properties.osProfile
     storageProfile: sourceVmConfig.properties.storageProfile
     subnetId: vnet1.outputs.subnets[0].id
-    internetIP: myhomeip
+    publicIp: publicIp1.outputs.pipId
+    nsgId: nsg1.outputs.nsgId
   }
 }
 
-// // Define the Traffic Manager profile
-// module trafficManager './trafficmanager.bicep' = {
-//   scope: sourceRG
-//   name: 'myTrafficManagerProfile'
-//   params: {}
-// }
+// Define the Traffic Manager profile
+module trafficManager './trafficmanager.bicep' = {
+  scope: sourceRG
+  name: 'myTrafficManagerProfile'
+  params: {
+    profileName: '${sourceVmConfig.vmName}-trafficmanager'
+    endpoint1Target: publicIp1.outputs.pipFqdn
+    endpoint2Target: publicIp2.outputs.pipFqdn
+  }
+}
+
+module automationacct './automation.bicep' = {
+  name: 'asr-automationaccount'
+  scope: targetRG
+  params: {
+    vaultName: '${asrvault.outputs.vaultName}-asr-automationaccount'
+    location: targetRGconfig.location
+  }
+}

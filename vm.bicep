@@ -4,18 +4,8 @@ param hardwareProfile object
 param osProfile object
 param storageProfile object
 param subnetId string
-param internetIP string
-
-resource publicIp 'Microsoft.Network/publicIPAddresses@2021-02-01' = {
-  name: '${vmName}-pip'
-  location: location
-  sku: {
-    name: 'Basic'
-  }
-  properties: {
-    publicIPAllocationMethod: 'Dynamic'
-  }
-}
+param publicIp string
+param nsgId string
 
 resource networkInterface 'Microsoft.Network/networkInterfaces@2021-02-01' = {
   name: '${vmName}-nic'
@@ -30,36 +20,14 @@ resource networkInterface 'Microsoft.Network/networkInterfaces@2021-02-01' = {
           }
           privateIPAllocationMethod: 'Dynamic'
           publicIPAddress: {
-            id: publicIp.id
+            id: publicIp
           }
         }
       }
     ]
     networkSecurityGroup: {
-      id: nsg.id
+      id: nsgId
     }
-  }
-}
-
-resource nsg 'Microsoft.Network/networkSecurityGroups@2021-02-01' = {
-  name: '${vmName}-nsg'
-  location: location
-  properties: {
-    securityRules: [
-      {
-        name: 'Allow-RDP-From-Specific-IP'
-        properties: {
-          priority: 1000
-          direction: 'Inbound'
-          access: 'Allow'
-          protocol: 'Tcp'
-          sourcePortRange: '*'
-          destinationPortRange: '3389'
-          sourceAddressPrefix: internetIP
-          destinationAddressPrefix: '*'
-        }
-      }
-    ]
   }
 }
 
