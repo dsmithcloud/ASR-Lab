@@ -1,11 +1,11 @@
 targetScope = 'subscription'
 
 param sourceRGconfig object = {
-  name: 'rg-asrlab-source'
+  name: 'rg-myasrlab-source'
   location: 'uksouth'
 }
 param targetRGconfig object = {
-  name: 'rg-asrlab-target'
+  name: 'rg-myasrlab-target'
   location: 'ukwest'
 }
 
@@ -49,6 +49,12 @@ param vnet2config object = {
       name: 'default'
       properties: {
         addressPrefix: '10.1.0.0/24'
+      }
+    }
+    {
+      name: 'testfailover'
+      properties: {
+        addressPrefix: '10.1.1.0/24'
       }
     }
   ]
@@ -196,5 +202,17 @@ module automationacct './automation.bicep' = {
   params: {
     vaultName: '${asrvault.outputs.vaultName}-asr-automationaccount'
     location: targetRGconfig.location
+  }
+}
+
+module storageacct './storage.bicep' = {
+  name: 'smithasr' //value can be 11 characters long max
+  scope: sourceRG
+  params: {
+    name: 'smithasr'
+    location: sourceRGconfig.location
+    sku: {
+      name: 'Standard_LRS'
+    }
   }
 }
