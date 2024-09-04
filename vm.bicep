@@ -7,7 +7,7 @@ param subnetId string
 param publicIp string
 param nsgId string
 
-resource networkInterface 'Microsoft.Network/networkInterfaces@2021-02-01' = {
+resource networkInterface 'Microsoft.Network/networkInterfaces@2024-01-01' = {
   name: '${vmName}-nic'
   location: location
   properties: {
@@ -31,7 +31,7 @@ resource networkInterface 'Microsoft.Network/networkInterfaces@2021-02-01' = {
   }
 }
 
-resource virtualMachine 'Microsoft.Compute/virtualMachines@2021-07-01' = {
+resource virtualMachine 'Microsoft.Compute/virtualMachines@2024-03-01' = {
   name: vmName
   location: location
   properties: {
@@ -44,6 +44,23 @@ resource virtualMachine 'Microsoft.Compute/virtualMachines@2021-07-01' = {
           id: networkInterface.id
         }
       ]
+    }
+  }
+}
+
+resource iisExtension 'Microsoft.Compute/virtualMachines/extensions@2024-03-01' = {
+  parent: virtualMachine
+  name: 'iisExtension'
+  location: location
+  properties: {
+    publisher: 'Microsoft.Compute'
+    type: 'CustomScriptExtension'
+    typeHandlerVersion: '1.10'
+    settings: {
+      fileUris: [
+        'https://raw.githubusercontent.com/dsmithcloud/ASR-Lab/main/DeployIIS.ps1'
+      ]
+      commandToExecute: 'powershell -ExecutionPolicy Unrestricted -File DeployIIS.ps1'
     }
   }
 }
