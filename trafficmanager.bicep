@@ -15,12 +15,12 @@ resource trafficManager 'Microsoft.Network/trafficManagerProfiles@2018-04-01' = 
     }
     monitorConfig: {
       protocol: 'TCP'
-      port: 3389 // RDP port
+      port: 80 // http port
       path: null
     }
     endpoints: [
       {
-        name: 'endpoint1'
+        name: 'vmEndpt1'
         type: 'Microsoft.Network/trafficManagerProfiles/externalEndpoints'
         properties: {
           target: endpoint1Target
@@ -29,7 +29,7 @@ resource trafficManager 'Microsoft.Network/trafficManagerProfiles@2018-04-01' = 
         }
       }
       {
-        name: 'endpoint2'
+        name: 'vmEndpt2'
         type: 'Microsoft.Network/trafficManagerProfiles/externalEndpoints'
         properties: {
           target: endpoint2Target
