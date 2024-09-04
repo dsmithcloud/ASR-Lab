@@ -8,9 +8,22 @@ resource nsg 'Microsoft.Network/networkSecurityGroups@2021-02-01' = {
   properties: {
     securityRules: [
       {
-        name: 'Allow-RDP-From-Specific-IP'
+        name: 'Allow-HTTP-From-Specific-IP'
         properties: {
           priority: 1000
+          direction: 'Inbound'
+          access: 'Allow'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '80'
+          sourceAddressPrefix: myIp
+          destinationAddressPrefix: '*'
+        }
+      }
+      {
+        name: 'Allow-RDP-From-Specific-IP'
+        properties: {
+          priority: 1001
           direction: 'Inbound'
           access: 'Allow'
           protocol: 'Tcp'
@@ -18,6 +31,19 @@ resource nsg 'Microsoft.Network/networkSecurityGroups@2021-02-01' = {
           destinationPortRange: '3389'
           sourceAddressPrefix: myIp
           destinationAddressPrefix: '*'
+        }
+      }
+      {
+        name: 'Allow-Internet-Outbound'
+        properties: {
+          priority: 200
+          direction: 'Outbound'
+          access: 'Allow'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '*'
+          sourceAddressPrefix: '*'
+          destinationAddressPrefix: 'Internet'
         }
       }
     ]
