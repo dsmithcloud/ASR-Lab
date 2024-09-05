@@ -3,7 +3,7 @@ param location string
 param addressSpace object
 param subnets array
 
-resource virtualNetwork 'Microsoft.Network/virtualNetworks@2021-02-01' = {
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-01-01' = {
   name: name
   location: location
   properties: {

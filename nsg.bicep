@@ -2,7 +2,7 @@ param vmName string
 param location string
 param myIp string
 
-resource nsg 'Microsoft.Network/networkSecurityGroups@2021-02-01' = {
+resource nsg 'Microsoft.Network/networkSecurityGroups@2024-01-01' = {
   name: '${vmName}-${location}-nsg'
   location: location
   properties: {

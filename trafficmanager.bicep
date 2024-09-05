@@ -3,7 +3,7 @@ param endpoint2Target string
 param profileName string
 
 // Define the Traffic Manager profile
-resource trafficManager 'Microsoft.Network/trafficManagerProfiles@2018-04-01' = {
+resource trafficManager 'Microsoft.Network/trafficmanagerprofiles@2022-04-01' = {
   name: profileName
   location: 'global'
   properties: {

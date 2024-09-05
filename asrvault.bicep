@@ -2,7 +2,7 @@ param vaultName string
 param location string
 param sku object
 
-resource recoveryServicesVault 'Microsoft.RecoveryServices/vaults@2022-02-01' = {
+resource recoveryServicesVault 'Microsoft.RecoveryServices/vaults@2024-04-01' = {
   name: vaultName
   location: location
   properties: {}
@@ -12,15 +12,15 @@ resource recoveryServicesVault 'Microsoft.RecoveryServices/vaults@2022-02-01' = 
   }
 }
 
-// resource replicationPolicies 'Microsoft.RecoveryServices/vaults/replicationPolicies@2024-04-01' = {
-//   name: '24-hour-retention-policy'
-//   parent: recoveryServicesVault
-//   properties: {
-//     providerSpecificInput: {
-//       instanceType: 'A2A'
-//       multiVmSyncStatus: 'Disable'
-//     }
-//   }
-// }
+resource replicationPolicies 'Microsoft.RecoveryServices/vaults/replicationPolicies@2024-04-01' = {
+  name: '24-hour-retention-policy'
+  parent: recoveryServicesVault
+  properties: {
+    providerSpecificInput: {
+      instanceType: 'A2A'
+      multiVmSyncStatus: 'Disable'
+    }
+  }
+}
 
 output vaultName string = recoveryServicesVault.name
