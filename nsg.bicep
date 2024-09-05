@@ -16,7 +16,7 @@ resource nsg 'Microsoft.Network/networkSecurityGroups@2024-01-01' = {
           protocol: 'Tcp'
           sourcePortRange: '*'
           destinationPortRange: '80'
-          sourceAddressPrefix: myIp
+          sourceAddressPrefix: '*'
           destinationAddressPrefix: '*'
         }
       }
