@@ -5,7 +5,9 @@ param sku object
 resource recoveryServicesVault 'Microsoft.RecoveryServices/vaults@2024-04-01' = {
   name: vaultName
   location: location
-  properties: {}
+  properties: {
+    publicNetworkAccess: 'Enabled'
+  }
   sku: {
     name: sku.name
     tier: sku.tier
