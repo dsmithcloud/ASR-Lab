@@ -1,3 +1,5 @@
+// Parameters & variables
+@description('VM Name, Location, Hardware Profile, OS Profile, Storage Profile, Subnet ID, Public IP ID, NSG ID')
 param vmName string
 param location string
 param hardwareProfile object
@@ -7,6 +9,8 @@ param subnetId string
 param publicIp string
 param nsgId string
 
+// Resources
+@description('Network interface')
 resource networkInterface 'Microsoft.Network/networkInterfaces@2024-01-01' = {
   name: '${vmName}-nic'
   location: location
@@ -31,6 +35,7 @@ resource networkInterface 'Microsoft.Network/networkInterfaces@2024-01-01' = {
   }
 }
 
+@description('Virtual machine')
 resource virtualMachine 'Microsoft.Compute/virtualMachines@2024-03-01' = {
   name: vmName
   location: location
@@ -48,6 +53,7 @@ resource virtualMachine 'Microsoft.Compute/virtualMachines@2024-03-01' = {
   }
 }
 
+@description('Custom script extension to deploy IIS')
 resource iisExtension 'Microsoft.Compute/virtualMachines/extensions@2024-03-01' = {
   parent: virtualMachine
   name: 'iisExtension'
@@ -65,5 +71,7 @@ resource iisExtension 'Microsoft.Compute/virtualMachines/extensions@2024-03-01' 
   }
 }
 
+// Output
+@description('Output the VM ID and NIC ID')
 output vmId string = virtualMachine.id
 output vmNicId string = networkInterface.id

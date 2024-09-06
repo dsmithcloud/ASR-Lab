@@ -1,7 +1,11 @@
+// Parameters & variables
+@description('VM Name, Location and my IP address')
 param vmName string
 param location string
 param myIp string
 
+// Resources
+@description('Network Security Group and rules')
 resource nsg 'Microsoft.Network/networkSecurityGroups@2024-01-01' = {
   name: '${vmName}-${location}-nsg'
   location: location
@@ -50,4 +54,6 @@ resource nsg 'Microsoft.Network/networkSecurityGroups@2024-01-01' = {
   }
 }
 
+// Output
+@description('Output the NSG ID')
 output nsgId string = nsg.id

@@ -1,6 +1,10 @@
+// Parameters & variables
+@description('Automation Account Name & Location')
 param vaultName string
 param location string
 
+// Resources
+@description('Automation Account')
 resource automationAccount 'Microsoft.Automation/automationAccounts@2023-11-01' = {
   name: vaultName
   location: location
@@ -13,3 +17,7 @@ resource automationAccount 'Microsoft.Automation/automationAccounts@2023-11-01' 
     }
   }
 }
+
+// Output
+@description('Output the automation account ID')
+output automationAccountId string = automationAccount.id

@@ -1,5 +1,11 @@
+// Description: This Bicep file is used to deploy a VM in a source region and configure ASR to replicate the VM to a target region.
 targetScope = 'subscription'
 
+// Parameters & variables
+@description('Public IP configuration that is allowed RDP into the vm.')
+param myhomeip string = '20.97.9.18'
+
+@description('Resource Group configurations for source and target')
 param sourceRGconfig object = {
   name: 'rg-myasrlab-source'
   location: 'uksouth'
@@ -9,6 +15,7 @@ param targetRGconfig object = {
   location: 'ukwest'
 }
 
+@description('ASR Vault configuration in the target region')
 param rsvvaultconfig object = {
   vaultName: 'asrvault'
   location: targetRGconfig.location
@@ -18,6 +25,7 @@ param rsvvaultconfig object = {
   }
 }
 
+@description('VNet configurations for source')
 param vnet1config object = {
   vnetName: 'vnet1'
   location: sourceRGconfig.location
@@ -36,6 +44,7 @@ param vnet1config object = {
   ]
 }
 
+@description('VNet configurations for target')
 param vnet2config object = {
   vnetName: 'vnet2'
   location: sourceRGconfig.location
@@ -60,8 +69,10 @@ param vnet2config object = {
   ]
 }
 
+@description('Source VM configuration')
+param myVmName string = 'sourceVm'
 param sourceVmConfig object = {
-  vmName: 'sourceVm'
+  vmName: myVmName
   location: sourceRGconfig.location
   vnetName: vnet1config.vnetName
   subnetName: vnet1config.subnets[0].name
@@ -70,7 +81,7 @@ param sourceVmConfig object = {
       vmSize: 'Standard_DS1_v2'
     }
     osProfile: {
-      computerName: 'myVM'
+      computerName: myVmName
       adminUsername: 'azureuser'
       adminPassword: 'Password123!'
     }
@@ -88,18 +99,18 @@ param sourceVmConfig object = {
   }
 }
 
-param myhomeip string = '20.97.9.18'
-
+// Resources
+@description('Resource Groups for source and target')
 resource sourceRG 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: '${sourceRGconfig.name}-${sourceRGconfig.location}'
   location: sourceRGconfig.location
 }
-
 resource targetRG 'Microsoft.Resources/resourceGroups@2021-04-01' = {
   name: '${targetRGconfig.name}-${targetRGconfig.location}'
   location: targetRGconfig.location
 }
 
+@description('ASR Vault in the target region')
 module asrvault './asrvault.bicep' = {
   name: 'asrvault'
   scope: targetRG
@@ -110,6 +121,7 @@ module asrvault './asrvault.bicep' = {
   }
 }
 
+@description('VNet configurations for source and target')
 module vnet1 './vnet.bicep' = {
   name: vnet1config.vnetName
   scope: sourceRG
@@ -120,7 +132,6 @@ module vnet1 './vnet.bicep' = {
     subnets: vnet1config.subnets
   }
 }
-
 module vnet2 './vnet.bicep' = {
   name: vnet2config.vnetName
   scope: sourceRG
@@ -132,6 +143,7 @@ module vnet2 './vnet.bicep' = {
   }
 }
 
+@description('Public IP configurations for source and target')
 module publicIp1 './pip.bicep' = {
   name: '${sourceRGconfig.location}-pip'
   scope: sourceRG
@@ -140,7 +152,6 @@ module publicIp1 './pip.bicep' = {
     location: sourceRGconfig.location
   }
 }
-
 module publicIp2 './pip.bicep' = {
   name: '${targetRGconfig.location}-pip'
   scope: targetRG
@@ -150,6 +161,7 @@ module publicIp2 './pip.bicep' = {
   }
 }
 
+@description('Network Security Group for source and target')
 module nsg1 './nsg.bicep' = {
   name: '${sourceVmConfig.vmName}-${sourceRGconfig.location}-nsg'
   scope: sourceRG
@@ -159,7 +171,6 @@ module nsg1 './nsg.bicep' = {
     myIp: myhomeip
   }
 }
-
 module nsg2 './nsg.bicep' = {
   name: '${sourceVmConfig.vmName}-${targetRGconfig.location}-nsg'
   scope: targetRG
@@ -170,6 +181,7 @@ module nsg2 './nsg.bicep' = {
   }
 }
 
+@description('Source VM configuration')
 module sourceVm './vm.bicep' = {
   name: sourceVmConfig.vmName
   scope: sourceRG
@@ -185,7 +197,7 @@ module sourceVm './vm.bicep' = {
   }
 }
 
-// Define the Traffic Manager profile
+@description('Traffic Manager profile for the web site on the source VM')
 module trafficManager './trafficmanager.bicep' = {
   scope: sourceRG
   name: 'myTrafficManagerProfile'
@@ -196,6 +208,7 @@ module trafficManager './trafficmanager.bicep' = {
   }
 }
 
+@description('Automation Account for ASR')
 module automationacct './automation.bicep' = {
   name: 'asr-automationaccount'
   scope: targetRG
@@ -205,6 +218,7 @@ module automationacct './automation.bicep' = {
   }
 }
 
+@description('Storage account for ASR cache')
 module storageacct './storage.bicep' = {
   name: 'smithasr' //value can be 11 characters long max
   scope: sourceRG
@@ -216,3 +230,5 @@ module storageacct './storage.bicep' = {
     }
   }
 }
+
+// Output
