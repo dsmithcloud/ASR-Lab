@@ -202,7 +202,7 @@ module trafficManager './trafficmanager.bicep' = {
   scope: sourceRG
   name: 'myTrafficManagerProfile'
   params: {
-    profileName: '${sourceVmConfig.vmName}-trafficmanager'
+    profileName: sourceVmConfig.vmName
     endpoint1Target: publicIp1.outputs.pipFqdn
     endpoint2Target: publicIp2.outputs.pipFqdn
   }
@@ -232,3 +232,4 @@ module storageacct './storage.bicep' = {
 }
 
 // Output
+output fqdn string = trafficManager.outputs.trafficManagerfqdn

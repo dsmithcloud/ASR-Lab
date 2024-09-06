@@ -3,17 +3,18 @@
 param endpoint1Target string
 param endpoint2Target string
 param profileName string
+var tmName = '${profileName}${uniqueString(resourceGroup().id)}'
 
 //Resources
 @description('Traffic Manager Profile')
 resource trafficManager 'Microsoft.Network/trafficmanagerprofiles@2022-04-01' = {
-  name: profileName
+  name: tmName
   location: 'global'
   properties: {
     profileStatus: 'Enabled'
     trafficRoutingMethod: 'Priority'
     dnsConfig: {
-      relativeName: profileName
+      relativeName: tmName
       ttl: 30
     }
     monitorConfig: {
@@ -45,5 +46,6 @@ resource trafficManager 'Microsoft.Network/trafficmanagerprofiles@2022-04-01' = 
 }
 
 //Output
-@description('Output the Traffic Manager ID')
+@description('Output the Traffic Manager ID & FQDN')
 output trafficManagerId string = trafficManager.id
+output trafficManagerfqdn string = trafficManager.properties.dnsConfig.fqdn
