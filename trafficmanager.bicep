@@ -55,28 +55,12 @@ resource trafficManagerDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-pr
       {
         category: 'ProbeHealthStatusEvents'
         enabled: true
-        retentionPolicy: {
-          enabled: true
-          days: 30
-        }
-      }
-      {
-        category: 'TrafficManagerEndpointStatusEvents'
-        enabled: true
-        retentionPolicy: {
-          enabled: true
-          days: 30
-        }
       }
     ]
     metrics: [
       {
         category: 'AllMetrics'
         enabled: true
-        retentionPolicy: {
-          enabled: true
-          days: 30
-        }
       }
     ]
     workspaceId: logAnalyticsWorkspaceId
