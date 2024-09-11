@@ -118,6 +118,21 @@ module asrvault './asrvault.bicep' = {
     vaultName: rsvvaultconfig.vaultName
     location: rsvvaultconfig.location
     sku: rsvvaultconfig.sku
+    logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
+  }
+}
+
+@description('Log Analytics Account in Source Region')
+module logAnalytics './monitor.bicep' = {
+  name: 'loganalytics'
+  scope: sourceRG
+  params: {
+    name: 'loganalytics'
+    location: sourceRGconfig.location
+    sku: {
+      name: 'PerGB2018'
+    }
+    retentionInDays: 30
   }
 }
 
@@ -130,6 +145,7 @@ module vnet1 './vnet.bicep' = {
     location: sourceRGconfig.location
     addressSpace: vnet1config.addressSpace
     subnets: vnet1config.subnets
+    logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
   }
 }
 module vnet2 './vnet.bicep' = {
@@ -140,6 +156,7 @@ module vnet2 './vnet.bicep' = {
     location: targetRGconfig.location
     addressSpace: vnet2config.addressSpace
     subnets: vnet2config.subnets
+    logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
   }
 }
 
@@ -150,6 +167,7 @@ module publicIp1 './pip.bicep' = {
   params: {
     vmName: sourceVmConfig.vmName
     location: sourceRGconfig.location
+    logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
   }
 }
 module publicIp2 './pip.bicep' = {
@@ -158,6 +176,7 @@ module publicIp2 './pip.bicep' = {
   params: {
     vmName: sourceVmConfig.vmName
     location: targetRGconfig.location
+    logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
   }
 }
 
@@ -169,6 +188,7 @@ module nsg1 './nsg.bicep' = {
     vmName: sourceVmConfig.vmName
     location: sourceRGconfig.location
     myIp: myhomeip
+    logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
   }
 }
 module nsg2 './nsg.bicep' = {
@@ -178,6 +198,7 @@ module nsg2 './nsg.bicep' = {
     vmName: sourceVmConfig.vmName
     location: targetRGconfig.location
     myIp: myhomeip
+    logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
   }
 }
 
@@ -194,6 +215,7 @@ module sourceVm './vm.bicep' = {
     subnetId: vnet1.outputs.subnets[0].id
     publicIp: publicIp1.outputs.pipId
     nsgId: nsg1.outputs.nsgId
+    logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
   }
 }
 
@@ -205,6 +227,7 @@ module trafficManager './trafficmanager.bicep' = {
     profileName: sourceVmConfig.vmName
     endpoint1Target: publicIp1.outputs.pipFqdn
     endpoint2Target: publicIp2.outputs.pipFqdn
+    logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
   }
 }
 
@@ -215,19 +238,21 @@ module automationacct './automation.bicep' = {
   params: {
     vaultName: '${asrvault.outputs.vaultName}-asr-automationaccount'
     location: targetRGconfig.location
+    logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
   }
 }
 
 @description('Storage account for ASR cache')
 module storageacct './storage.bicep' = {
-  name: 'smithasr' //value can be 11 characters long max
+  name: 'asr' //value can be 11 characters long max
   scope: sourceRG
   params: {
-    name: 'smithasr'
+    name: 'asr'
     location: sourceRGconfig.location
     sku: {
       name: 'Standard_LRS'
     }
+    logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
   }
 }
 
