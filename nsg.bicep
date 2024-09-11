@@ -3,6 +3,7 @@
 param vmName string
 param location string
 param myIp string
+param logAnalyticsWorkspaceId string
 
 // Resources
 @description('Network Security Group and rules')
@@ -51,6 +52,26 @@ resource nsg 'Microsoft.Network/networkSecurityGroups@2024-01-01' = {
         }
       }
     ]
+  }
+}
+
+// Define the Diagnostic Settings for the NSG
+resource nsgDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${nsg.name}-diag'
+  scope: nsg
+  properties: {
+    logs: [
+      {
+        category: 'NetworkSecurityGroupEvent'
+        enabled: true
+      }
+      {
+        category: 'NetworkSecurityGroupRuleCounter'
+        enabled: true
+      }
+    ]
+    metrics: []
+    workspaceId: logAnalyticsWorkspaceId
   }
 }
 

@@ -3,6 +3,7 @@
 param endpoint1Target string
 param endpoint2Target string
 param profileName string
+param logAnalyticsWorkspaceId string
 var tmName = '${profileName}${uniqueString(resourceGroup().id)}'
 
 //Resources
@@ -42,6 +43,43 @@ resource trafficManager 'Microsoft.Network/trafficmanagerprofiles@2022-04-01' = 
         }
       }
     ]
+  }
+}
+
+// Define the Diagnostic Settings for the Traffic Manager
+resource trafficManagerDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'trafficManagerDiagSettings'
+  scope: trafficManager
+  properties: {
+    logs: [
+      {
+        category: 'ProbeHealthStatusEvents'
+        enabled: true
+        retentionPolicy: {
+          enabled: true
+          days: 30
+        }
+      }
+      {
+        category: 'TrafficManagerEndpointStatusEvents'
+        enabled: true
+        retentionPolicy: {
+          enabled: true
+          days: 30
+        }
+      }
+    ]
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+        retentionPolicy: {
+          enabled: true
+          days: 30
+        }
+      }
+    ]
+    workspaceId: logAnalyticsWorkspaceId
   }
 }
 
