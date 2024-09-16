@@ -3,7 +3,6 @@
         "DiagnosticMonitorConfiguration": {
             "overallQuotaInMB": 5120,
             "Metrics": {
-                "resourceId": "/subscriptions/a59a1537-1278-4073-83d6-505e8200c8c9/resourceGroups/rg-myasrlab-source-uksouth/providers/Microsoft.Compute/virtualMachines/sourceVm",
                 "MetricAggregation": [
                     {
                         "scheduledTransferPeriod": "PT1H"

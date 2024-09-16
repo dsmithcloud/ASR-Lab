@@ -216,7 +216,8 @@ module sourceVm './vm.bicep' = {
     publicIp: publicIp1.outputs.pipId
     nsgId: nsg1.outputs.nsgId
     logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
-    storageAccountName: storageacct.outputs.storageAccountName
+    // storageAccountName: storageacct.outputs.storageAccountName
+    // storageAccountId: storageacct.outputs.storageAccountId
   }
 }
 

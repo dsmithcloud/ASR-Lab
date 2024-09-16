@@ -9,15 +9,16 @@ param subnetId string
 param publicIp string
 param nsgId string
 param logAnalyticsWorkspaceId string
-param storageAccountName string
-var diagnosticConfig = {
-  xmlCfg: json(loadTextContent('./wadcfg.json'))
-  storageAccount: storageAccountName
-  protectedSettings: {
-    storageAccountName: storageAccountName
-    storageAccountKey: logAnalyticsWorkspaceId
-  }
-}
+// param storageAccountName string
+// param storageAccountId string
+// var diagnosticConfig = {
+//   xmlCfg: json(loadTextContent('./wadcfg.json'))
+//   storageAccount: storageAccountName
+//   protectedSettings: {
+//     storageAccountName: storageAccountName
+//     storageAccountKey: logAnalyticsWorkspaceId
+//   }
+// }
 
 // Resources
 @description('Network interface')
@@ -60,6 +61,11 @@ resource virtualMachine 'Microsoft.Compute/virtualMachines@2024-03-01' = {
         }
       ]
     }
+    diagnosticsProfile: {
+      bootDiagnostics: {
+        enabled: true
+      }
+    }
   }
 }
 
@@ -81,17 +87,18 @@ resource iisExtension 'Microsoft.Compute/virtualMachines/extensions@2024-03-01' 
   }
 }
 
-resource diagExtension 'Microsoft.Compute/virtualMachines/extensions@2024-03-01' = {
-  name: 'IaaSDiagnostics'
-  parent: virtualMachine
-  properties: {
-    publisher: 'Microsoft.Azure.Diagnostics'
-    type: 'IaaSDiagnostics'
-    typeHandlerVersion: '1.5'
-    autoUpgradeMinorVersion: true
-    settings: diagnosticConfig
-  }
-}
+// resource windowsDiagnostics 'Microsoft.Compute/virtualMachines/extensions@2024-03-01' = {
+//   name: 'IaaSDiagnostics'
+//   parent: virtualMachine
+//   location: location
+//   properties: {
+//     publisher: 'Microsoft.Azure.Diagnostics'
+//     type: 'IaaSDiagnostics'
+//     typeHandlerVersion: '1.5'
+//     autoUpgradeMinorVersion: true
+//     settings: diagnosticConfig
+//   }
+// }
 
 // Define the Diagnostic Settings for the NIC
 resource nicDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
@@ -103,47 +110,6 @@ resource nicDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
       {
         category: 'AllMetrics'
         enabled: true
-        retentionPolicy: {
-          enabled: true
-          days: 30
-        }
-      }
-    ]
-    workspaceId: logAnalyticsWorkspaceId
-  }
-}
-
-// Define the Diagnostic Settings for the VM
-resource vmDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: 'vmDiagSettings'
-  scope: virtualMachine
-  properties: {
-    logs: [
-      {
-        category: 'GuestOS'
-        enabled: true
-        retentionPolicy: {
-          enabled: true
-          days: 30
-        }
-      }
-      {
-        category: 'BootDiagnostics'
-        enabled: true
-        retentionPolicy: {
-          enabled: true
-          days: 30
-        }
-      }
-    ]
-    metrics: [
-      {
-        category: 'AllMetrics'
-        enabled: true
-        retentionPolicy: {
-          enabled: true
-          days: 30
-        }
       }
     ]
     workspaceId: logAnalyticsWorkspaceId
