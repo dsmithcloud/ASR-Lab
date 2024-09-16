@@ -107,3 +107,4 @@ resource diagnosticsTable 'Microsoft.Insights/diagnosticSettings@2021-05-01-prev
 // Output
 @description('Output the storage account ID')
 output storageAccountId string = storageAccount.id
+output storageAccountName string = storageAccount.name
