@@ -60,3 +60,4 @@ resource networkWatcher 'Microsoft.Network/networkWatchers@2024-01-01' = {
 @description('Output the virtual network ID & subnets')
 output vnetId string = virtualNetwork.id
 output subnets array = virtualNetwork.properties.subnets
+output name string = virtualNetwork.name
