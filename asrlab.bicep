@@ -2,9 +2,6 @@
 targetScope = 'subscription'
 
 // Parameters & variables
-@description('Public IP configuration that is allowed RDP into the vm.')
-param myhomeip string = '20.97.9.18'
-
 @description('Resource Group configurations for source and target')
 param sourceRGconfig object = {
   name: 'rg-myasrlab-source'
@@ -39,6 +36,12 @@ param vnet1config object = {
       name: 'default'
       properties: {
         addressPrefix: '10.0.0.0/24'
+      }
+    }
+    {
+      name: 'AzureBastionSubnet'
+      properties: {
+        addressPrefix: '10.0.2.0/24'
       }
     }
   ]
@@ -150,7 +153,7 @@ module vnet1 './vnet.bicep' = {
 }
 module vnet2 './vnet.bicep' = {
   name: vnet2config.vnetName
-  scope: sourceRG
+  scope: targetRG
   params: {
     name: 'vnet2-${targetRGconfig.location}'
     location: targetRGconfig.location
@@ -160,23 +163,68 @@ module vnet2 './vnet.bicep' = {
   }
 }
 
+module peering1 './vnetpeer.bicep' = {
+  name: 'peering1'
+  scope: sourceRG
+  params: {
+    parHomeNetworkName: vnet1.outputs.name
+    parRemoteNetworkId: vnet2.outputs.vnetId
+    parUseRemoteGateways: false
+    parAllowGatewayTransit: false
+  }
+}
+
+module peering2 './vnetpeer.bicep' = {
+  name: 'peering2'
+  scope: targetRG
+  params: {
+    parHomeNetworkName: vnet2.outputs.name
+    parRemoteNetworkId: vnet1.outputs.vnetId
+    parUseRemoteGateways: false
+    parAllowGatewayTransit: false
+  }
+}
+
 @description('Public IP configurations for source and target')
 module publicIp1 './pip.bicep' = {
   name: '${sourceRGconfig.location}-pip'
   scope: sourceRG
   params: {
-    vmName: sourceVmConfig.vmName
+    namePrefix: sourceVmConfig.vmName
     location: sourceRGconfig.location
     logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
+    skuName: 'Basic'
   }
 }
 module publicIp2 './pip.bicep' = {
   name: '${targetRGconfig.location}-pip'
   scope: targetRG
   params: {
-    vmName: sourceVmConfig.vmName
+    namePrefix: sourceVmConfig.vmName
     location: targetRGconfig.location
     logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
+    skuName: 'Basic'
+  }
+}
+module bastionpublicIp './pip.bicep' = {
+  name: 'bastion-pip'
+  scope: sourceRG
+  params: {
+    namePrefix: 'bastion'
+    location: sourceRG.location
+    logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
+    skuName: 'Standard'
+  }
+}
+
+module bastion './bastion.bicep' = {
+  name: 'bastion'
+  scope: sourceRG
+  params: {
+    bastionName: 'myBastion'
+    location: sourceRGconfig.location
+    bastionSubnetId: vnet1.outputs.subnets[1].id
+    bastionPublicIpId: bastionpublicIp.outputs.pipId
   }
 }
 
@@ -187,7 +235,6 @@ module nsg1 './nsg.bicep' = {
   params: {
     vmName: sourceVmConfig.vmName
     location: sourceRGconfig.location
-    myIp: myhomeip
     logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
   }
 }
@@ -197,7 +244,6 @@ module nsg2 './nsg.bicep' = {
   params: {
     vmName: sourceVmConfig.vmName
     location: targetRGconfig.location
-    myIp: myhomeip
     logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
   }
 }
