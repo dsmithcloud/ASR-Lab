@@ -1,20 +1,22 @@
 // Parameters & variables
 @description('VM Name, Location and DNS Label Prefix')
-param vmName string
+param namePrefix string
 param location string
-param dnsLabelPrefix string = toLower('${vmName}-${uniqueString(resourceGroup().id, vmName)}')
+param dnsLabelPrefix string = toLower('${namePrefix}-${uniqueString(resourceGroup().id, namePrefix)}')
 param logAnalyticsWorkspaceId string
+param skuName string
+var publicIPAllocationMethod = (skuName == 'Standard') ? 'Static' : 'Dynamic'
 
 // Resources
 @description('Public IP address')
 resource pip 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
-  name: '${location}-pip'
+  name: '${namePrefix}-pip'
   location: location
   sku: {
-    name: 'Basic'
+    name: skuName
   }
   properties: {
-    publicIPAllocationMethod: 'Dynamic'
+    publicIPAllocationMethod: publicIPAllocationMethod
     dnsSettings: {
       domainNameLabel: dnsLabelPrefix
     }
