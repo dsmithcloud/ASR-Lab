@@ -2,7 +2,6 @@
 @description('VM Name, Location and my IP address')
 param vmName string
 param location string
-param myIp string
 param logAnalyticsWorkspaceId string
 
 // Resources
@@ -22,19 +21,6 @@ resource nsg 'Microsoft.Network/networkSecurityGroups@2024-01-01' = {
           sourcePortRange: '*'
           destinationPortRange: '80'
           sourceAddressPrefix: '*'
-          destinationAddressPrefix: '*'
-        }
-      }
-      {
-        name: 'Allow-RDP-From-Specific-IP'
-        properties: {
-          priority: 1001
-          direction: 'Inbound'
-          access: 'Allow'
-          protocol: 'Tcp'
-          sourcePortRange: '*'
-          destinationPortRange: '3389'
-          sourceAddressPrefix: myIp
           destinationAddressPrefix: '*'
         }
       }
