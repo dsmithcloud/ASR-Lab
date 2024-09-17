@@ -114,7 +114,7 @@ resource targetRG 'Microsoft.Resources/resourceGroups@2021-04-01' = {
 }
 
 @description('ASR Vault in the target region')
-module asrvault './asrvault.bicep' = {
+module asrvault './MODULES/asrvault.bicep' = {
   name: 'asrvault'
   scope: targetRG
   params: {
@@ -126,7 +126,7 @@ module asrvault './asrvault.bicep' = {
 }
 
 @description('Log Analytics Account in Source Region')
-module logAnalytics './monitor.bicep' = {
+module logAnalytics './MODULES/monitor.bicep' = {
   name: 'loganalytics'
   scope: sourceRG
   params: {
@@ -140,7 +140,7 @@ module logAnalytics './monitor.bicep' = {
 }
 
 @description('VNet configurations for source and target')
-module vnet1 './vnet.bicep' = {
+module vnet1 './MODULES/vnet.bicep' = {
   name: vnet1config.vnetName
   scope: sourceRG
   params: {
@@ -151,7 +151,7 @@ module vnet1 './vnet.bicep' = {
     logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
   }
 }
-module vnet2 './vnet.bicep' = {
+module vnet2 './MODULES/vnet.bicep' = {
   name: vnet2config.vnetName
   scope: targetRG
   params: {
@@ -163,7 +163,7 @@ module vnet2 './vnet.bicep' = {
   }
 }
 
-module peering1 './vnetpeer.bicep' = {
+module peering1 './MODULES/vnetpeer.bicep' = {
   name: 'peering1'
   scope: sourceRG
   params: {
@@ -174,7 +174,7 @@ module peering1 './vnetpeer.bicep' = {
   }
 }
 
-module peering2 './vnetpeer.bicep' = {
+module peering2 './MODULES/vnetpeer.bicep' = {
   name: 'peering2'
   scope: targetRG
   params: {
@@ -186,7 +186,7 @@ module peering2 './vnetpeer.bicep' = {
 }
 
 @description('Public IP configurations for source and target')
-module publicIp1 './pip.bicep' = {
+module publicIp1 './MODULES/pip.bicep' = {
   name: '${sourceRGconfig.location}-pip'
   scope: sourceRG
   params: {
@@ -196,7 +196,7 @@ module publicIp1 './pip.bicep' = {
     skuName: 'Basic'
   }
 }
-module publicIp2 './pip.bicep' = {
+module publicIp2 './MODULES/pip.bicep' = {
   name: '${targetRGconfig.location}-pip'
   scope: targetRG
   params: {
@@ -206,7 +206,7 @@ module publicIp2 './pip.bicep' = {
     skuName: 'Basic'
   }
 }
-module bastionpublicIp './pip.bicep' = {
+module bastionpublicIp './MODULES/pip.bicep' = {
   name: 'bastion-pip'
   scope: sourceRG
   params: {
@@ -217,7 +217,7 @@ module bastionpublicIp './pip.bicep' = {
   }
 }
 
-module bastion './bastion.bicep' = {
+module bastion './MODULES/bastion.bicep' = {
   name: 'bastion'
   scope: sourceRG
   params: {
@@ -229,7 +229,7 @@ module bastion './bastion.bicep' = {
 }
 
 @description('Network Security Group for source and target')
-module nsg1 './nsg.bicep' = {
+module nsg1 './MODULES/nsg.bicep' = {
   name: '${sourceVmConfig.vmName}-${sourceRGconfig.location}-nsg'
   scope: sourceRG
   params: {
@@ -238,7 +238,7 @@ module nsg1 './nsg.bicep' = {
     logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
   }
 }
-module nsg2 './nsg.bicep' = {
+module nsg2 './MODULES/nsg.bicep' = {
   name: '${sourceVmConfig.vmName}-${targetRGconfig.location}-nsg'
   scope: targetRG
   params: {
@@ -249,7 +249,7 @@ module nsg2 './nsg.bicep' = {
 }
 
 @description('Source VM configuration')
-module sourceVm './vm.bicep' = {
+module sourceVm './MODULES/vm.bicep' = {
   name: sourceVmConfig.vmName
   scope: sourceRG
   params: {
@@ -268,7 +268,7 @@ module sourceVm './vm.bicep' = {
 }
 
 @description('Traffic Manager profile for the web site on the source VM')
-module trafficManager './trafficmanager.bicep' = {
+module trafficManager './MODULES/trafficmanager.bicep' = {
   scope: sourceRG
   name: 'myTrafficManagerProfile'
   params: {
@@ -280,7 +280,7 @@ module trafficManager './trafficmanager.bicep' = {
 }
 
 @description('Automation Account for ASR')
-module automationacct './automation.bicep' = {
+module automationacct './MODULES/automation.bicep' = {
   name: 'asr-automationaccount'
   scope: targetRG
   params: {
@@ -291,7 +291,7 @@ module automationacct './automation.bicep' = {
 }
 
 @description('Storage account for ASR cache')
-module storageacct './storage.bicep' = {
+module storageacct './MODULES/storage.bicep' = {
   name: 'asr' //value can be 11 characters long max
   scope: sourceRG
   params: {
