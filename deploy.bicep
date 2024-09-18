@@ -1,20 +1,25 @@
 // Description: This Bicep file is used to deploy a VM in a source region and configure ASR to replicate the VM to a target region.
 targetScope = 'subscription'
 
-// Parameters & variables
+// Command Line Parameters & variables
+param parDeploymentPrefix string = 'asrdemo'
+param sourceLocation string = 'uksouth'
+param targetLocation string = 'ukwest'
+
+// Run-time Parameters & variables
 @description('Resource Group configurations for source and target')
-param sourceRGconfig object = {
-  name: 'rg-myasrlab-source'
-  location: 'uksouth'
+var sourceRGconfig = {
+  name: 'rg-${parDeploymentPrefix}-source'
+  location: sourceLocation
 }
-param targetRGconfig object = {
-  name: 'rg-myasrlab-target'
-  location: 'ukwest'
+var targetRGconfig = {
+  name: 'rg-${parDeploymentPrefix}-target'
+  location: targetLocation
 }
 
 @description('ASR Vault configuration in the target region')
-param rsvvaultconfig object = {
-  vaultName: 'asrvault'
+var rsvvaultconfig = {
+  vaultName: '${parDeploymentPrefix}-vault'
   location: targetRGconfig.location
   sku: {
     name: 'RS0'
@@ -23,7 +28,7 @@ param rsvvaultconfig object = {
 }
 
 @description('VNet configurations for source')
-param vnet1config object = {
+var vnet1config = {
   vnetName: 'vnet1'
   location: sourceRGconfig.location
   addressSpace: {
@@ -48,7 +53,7 @@ param vnet1config object = {
 }
 
 @description('VNet configurations for target')
-param vnet2config object = {
+var vnet2config = {
   vnetName: 'vnet2'
   location: sourceRGconfig.location
   addressSpace: {
@@ -73,8 +78,8 @@ param vnet2config object = {
 }
 
 @description('Source VM configuration')
-param myVmName string = 'sourceVm'
-param sourceVmConfig object = {
+var myVmName = 'sourceVm'
+var sourceVmConfig = {
   vmName: myVmName
   location: sourceRGconfig.location
   vnetName: vnet1config.vnetName
@@ -217,6 +222,7 @@ module bastionpublicIp './MODULES/pip.bicep' = {
   }
 }
 
+output bastionSubnet string = vnet1.outputs.subnets[1].id
 module bastion './MODULES/bastion.bicep' = {
   name: 'bastion'
   scope: sourceRG
@@ -226,6 +232,13 @@ module bastion './MODULES/bastion.bicep' = {
     bastionSubnetId: vnet1.outputs.subnets[1].id
     bastionPublicIpId: bastionpublicIp.outputs.pipId
   }
+  dependsOn: [
+    vnet1
+    publicIp1
+    nsg1
+    peering1
+    peering2
+  ]
 }
 
 @description('Network Security Group for source and target')
@@ -248,6 +261,7 @@ module nsg2 './MODULES/nsg.bicep' = {
   }
 }
 
+output vmSubnet string = vnet1.outputs.subnets[0].id
 @description('Source VM configuration')
 module sourceVm './MODULES/vm.bicep' = {
   name: sourceVmConfig.vmName
@@ -262,9 +276,14 @@ module sourceVm './MODULES/vm.bicep' = {
     publicIp: publicIp1.outputs.pipId
     nsgId: nsg1.outputs.nsgId
     logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
-    // storageAccountName: storageacct.outputs.storageAccountName
-    // storageAccountId: storageacct.outputs.storageAccountId
   }
+  dependsOn: [
+    vnet1
+    publicIp1
+    nsg1
+    peering1
+    peering2
+  ]
 }
 
 @description('Traffic Manager profile for the web site on the source VM')
