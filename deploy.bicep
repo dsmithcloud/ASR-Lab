@@ -222,7 +222,6 @@ module bastionpublicIp './MODULES/pip.bicep' = {
   }
 }
 
-output bastionSubnet string = vnet1.outputs.subnets[1].id
 module bastion './MODULES/bastion.bicep' = {
   name: 'bastion'
   scope: sourceRG
@@ -261,7 +260,6 @@ module nsg2 './MODULES/nsg.bicep' = {
   }
 }
 
-output vmSubnet string = vnet1.outputs.subnets[0].id
 @description('Source VM configuration')
 module sourceVm './MODULES/vm.bicep' = {
   name: sourceVmConfig.vmName
