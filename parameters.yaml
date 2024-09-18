@@ -1,0 +1,47 @@
+parDeploymentPrefix: asrdemo
+sourceLocation    : uksouth
+targetLocation: ukwest
+subscriptionId: a59a1537-1278-4073-83d6-505e8200c8c9
+vnets:
+  source :
+      addressPrefix : 10.0.0.0/16
+      subnets:
+        - name: default
+          addressPrefix: 10.0.0.0/24
+        - name: AzureBastionSubnet
+          addressPrefix: 10.0.1.0/24   
+  target :
+      addressPrefix : 10.1.0.0/16
+      subnets:
+        - name: default
+          addressPrefix: 10.1.0.0/24
+        - name: testfailover
+          addressPrefix: 10.1.1.0/24
+sourceVMs :
+  - name: asrtestvm
+    size: Standard_DS1_v2
+    osType: Windows
+    vnet: source
+    subnet: default
+    nic: asrtestvmnic
+    publicIp: asrtestvmip
+    diskType: Standard_LRS
+    diskSize: 1024
+    diskCount: 1
+    diskName: asrtestvmosdisk
+    diskCaching: ReadWrite
+    diskCreateOption: FromImage
+    imagePublisher: MicrosoftWindowsServer
+    imageOffer: WindowsServer
+    imageSku: 2019-Datacenter
+    imageVersion: latest
+    adminUsername: asradmin
+    adminPassword: Password123!
+    tags:
+      environment: test
+      owner: asradmin
+  - name: asrtestvm2
+    size: Standard_DS1_v2
+    osType: Windows
+    vnet: source
+    subnet: default          
