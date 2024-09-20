@@ -4,37 +4,37 @@ Import-Module Az
 
 
 # Convert the YAML content to a PowerShell object
-$varParameters = ConvertFrom-Yaml -Yaml $(Get-Content -Path "./parameters.yaml" -Raw)
-$varParameters.add("varTimeStamp",  (Get-Date).ToString("yyyy-MM-ddTHH.mm.ss"))
+$varParameters = ConvertFrom-Yaml -Yaml $(Get-Content -Path "./deployparam.yaml" -Raw)
+$varParameters.add("varTimeStamp", (Get-Date).ToString("yyyy-MM-ddTHH.mm.ss"))
 
 #constants
 $conMaxRetryAttemptTransientErrorRetry = 3
 $conRetry = $true
-$conRetryWaitTimeTransientErrorRetry = 60
+$conRetryWaitTimeTransientErrorRetry = 10
 $conLoopCounter = 0
 
 #bicep files
 $biceptemplate = '.\deploy.bicep'
 
-# function Enter-Login {
-#     Write-Information ">>> Initiating a login" -InformationAction Continue
-#     Connect-AzAccount
-# }
+function Enter-Login {
+    Write-Information ">>> Initiating a login" -InformationAction Continue
+    Connect-AzAccount
+}
 
-# function Get-SignedInUser {
+function Get-SignedInUser {
 
-#     $varSignedInUserDetails = Get-AzADUser -SignedIn
+    $varSignedInUserDetails = Get-AzADUser -SignedIn
 
-#     if (!$varSignedInUserDetails) {
-#         Write-Information ">>> No logged in user found." -InformationAction Continue
-#     }
-#     else {
-#         return $varSignedInUserDetails.UserPrincipalName
-#     }
+    if (!$varSignedInUserDetails) {
+        Write-Information ">>> No logged in user found." -InformationAction Continue
+    }
+    else {
+        return $varSignedInUserDetails.UserPrincipalName
+    }
 
-#     return $null
+    return $null
 
-# }
+}
 
 # function Confirm-UserOwnerPermission {
 #     if ($null -ne $varSignedInUser) {
@@ -66,14 +66,17 @@ $biceptemplate = '.\deploy.bicep'
 function New-ASRDemo {
     param()
 
-    $parDeploymentPrefix = $varParameters.parDeploymentPrefix
+    $parDeploymentPrefix = $varParameters.bicepParam.parDeploymentPrefix
     $parTimeStamp = $varParameters.varTimeStamp
-    $parDeploymentLocation = $varParameters.sourceLocation
+    $parDeploymentLocation = $varParameters.bicepParam.sourceLocation
     $biceptemplateDeploymentName = "$parDeploymentPrefix-deploy-$partimeStamp"
     $parameters = @{
-        parDeploymentPrefix = $varParameters.parDeploymentPrefix
-        sourceLocation    = $varParameters.sourceLocation
-        targetLocation= $varParameters.targetLocation
+        parDeploymentPrefix = $varParameters.bicepParam.parDeploymentPrefix
+        sourceLocation      = $varParameters.bicepparam.sourceLocation
+        targetLocation      = $varParameters.bicepParam.targetLocation
+        vmadminPassword     = $varParameters.bicepParam.vmAdminPassword
+        sourceVnetConfig    = $varParameters.bicepParam.sourceVnetConfig
+        targetVnetConfig    = $varParameters.bicepParam.targetVnetConfig
     }
 
     Set-AzContext -subscription $varParameters.subscriptionId
@@ -86,19 +89,8 @@ function New-ASRDemo {
                 -Location $parDeploymentLocation `
                 -TemplateFile $biceptemplate `
                 -parDeploymentPrefix $parameters.parDeploymentPrefix `
-                -sourceLocation $parameters.sourceLocation `
-                -targetLocation $parameters.targetLocation `
-                # -TemplateParameterObject $parameters `
+                -TemplateParameterObject $parameters `
                 -WarningAction Ignore
-
-            # $parametersJson = $parameters | ConvertTo-Json
-            # $parametersJson = './bicepparam.json'
-            # $bicepdeployment = az deployment sub create `
-            #     --name $biceptemplateDeploymentName `
-            #     --location $parDeploymentLocation `
-            #     --template-file $biceptemplate `
-            #     --parameters @$parametersJson
-            #     # -WarningAction Ignore
 
             if (!$bicepdeployment -or $bicepdeployment.ProvisioningState -eq "Failed") {
                 Write-Error "Error while executing ASR Demo deployment script" -ErrorAction Stop
@@ -124,4 +116,5 @@ function New-ASRDemo {
     }
 }
 
+Enter-Login
 New-ASRDemo
