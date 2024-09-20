@@ -7,10 +7,10 @@ AUTHOR/S: David Smith (CSA FSI)
 */
 
 param namePrefix string
-var nameSuffix = 'kv'
 var location = resourceGroup().location
-// var unique = substring(uniqueString(resourceGroup().id), 0, 8)  
-var Name = '${namePrefix}-${location}-${nameSuffix}' // must be between 3-24 alphanumeric characters
+var nameSuffix = 'kv'
+var subName = '${namePrefix}-${location}-${nameSuffix}' // must be between 3-24 alphanumeric characters
+var Name = length(subName) >= 24 ? substring(subName, 0, 24) : subName // Key Vault name must be between 3 and 24 characters in length and use numbers and lower-case letters only
 param secretName string
 @secure()
 param vmAdminPassword string
@@ -19,6 +19,9 @@ resource keyVault 'Microsoft.KeyVault/vaults@2024-04-01-preview' = {
   name: Name
   location: location
   properties: {
+    enabledForTemplateDeployment: true
+    enableRbacAuthorization: true
+    enableSoftDelete: false
     sku: {
       family: 'A'
       name: 'standard'
@@ -29,8 +32,8 @@ resource keyVault 'Microsoft.KeyVault/vaults@2024-04-01-preview' = {
 }
 
 resource secret 'Microsoft.KeyVault/vaults/secrets@2024-04-01-preview' = {
-  parent: keyVault
   name: secretName
+  parent: keyVault
   properties: {
     value: vmAdminPassword
   }
