@@ -125,5 +125,16 @@ function New-ASRDemo {
     }
 }
 
-Enter-Login
+# Get the current Azure context
+$context = Get-AzContext
+
+if ($context) {
+    # If a context is found, display the account information
+    Write-Output "User is logged in as: $($context.Account.Id)"
+} else {
+    # If no context is found, inform the user
+    Write-Output "No user is currently logged in. Please log in to Azure now."
+    Enter-Login
+}
+
 New-ASRDemo
