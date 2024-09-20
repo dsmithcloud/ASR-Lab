@@ -155,20 +155,20 @@ module bastion './MODULES/bastion.bicep' = {
   ]
 }
 
-// @description('Key Vault in the source region')
-// module keyvault './MODULES/keyvault.bicep' = {
-//   name: 'keyvault'
-//   scope: sourceRG
-//   params: {
-//     namePrefix: parDeploymentPrefix
-//     secretName: 'vmAdminPassword'
-//     vmAdminPassword: vmAdminPassword
-//     // userPrincipalId: '00000000-0000-0000-0000-000000000000'
-//   }
-//   dependsOn: [
-//     logAnalytics
-//   ]
-// }
+@description('Key Vault in the source region')
+module keyvault './MODULES/keyvault.bicep' = {
+  name: 'keyvault'
+  scope: sourceRG
+  params: {
+    namePrefix: parDeploymentPrefix
+    secretName: 'vmAdminPassword'
+    vmAdminPassword: vmAdminPassword
+    // userPrincipalId: '00000000-0000-0000-0000-000000000000'
+  }
+  dependsOn: [
+    logAnalytics
+  ]
+}
 
 // @description('Public IP configurations for source and target')
 // module publicIp1 './MODULES/pip.bicep' = {
