@@ -1,0 +1,24 @@
+subscriptionId: 'a59a1537-1278-4073-83d6-505e8200c8c9'
+bicepParam:
+  parDeploymentPrefix: 'asrdemo'
+  sourceLocation: 'uksouth'
+  targetLocation: 'ukwest'
+  vmAdminPassword: 'P@ssw0rd1234'
+  sourceVnetConfig:
+      addressSpace:
+        addressPrefixes:
+          - '10.0.0.0/16'
+      subnets:
+        - name: 'default'
+          addressPrefix: '10.0.0.0/24'
+        - name: 'AzureBastionSubnet'
+          addressPrefix: '10.0.1.0/24'
+  targetVnetConfig:
+      addressSpace:
+        addressPrefixes:
+          - '10.1.0.0/16'
+      subnets:
+        - name: 'default'
+          addressPrefix: '10.1.0.0/24'
+        - name: 'testfailover'
+          addressPrefix: '10.1.1.0/24'
