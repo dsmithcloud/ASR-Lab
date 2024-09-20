@@ -1,21 +1,31 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+/*
+SUMMARY: Module to create a Site Recovery Vault.
+DESCRIPTION: This module will create a deployment which will create the Site Recovery Vault in the target region for an ASR Demo
+AUTHOR/S: David Smith (CSA FSI)
+*/
+
 // Parameters & variables
 @description('ASR Vault Name, Location and SKU')
-param vaultName string
-param location string
-param sku object
+param namePrefix string
+var nameSuffix = 'asrvault'
+var location = resourceGroup().location
+// var unique = substring(uniqueString(resourceGroup().id), 0, 8)
+var Name = '${namePrefix}-${location}-${nameSuffix}'
 param logAnalyticsWorkspaceId string
 
 // Resources
 @description('ASR Vault configuration in the target region')
 resource recoveryServicesVault 'Microsoft.RecoveryServices/vaults@2024-04-01' = {
-  name: vaultName
+  name: Name
   location: location
   properties: {
     publicNetworkAccess: 'Enabled'
   }
   sku: {
-    name: sku.name
-    tier: sku.tier
+    name: 'RS0'
+    tier: 'Standard'
   }
 }
 resource replicationPolicies 'Microsoft.RecoveryServices/vaults/replicationPolicies@2024-04-01' = {

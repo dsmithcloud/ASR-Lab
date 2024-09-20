@@ -1,10 +1,17 @@
-// Parameters & variables
-@description('Storage Account Name, Location and SKU')
-param name string
-param location string
-param sku object
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+/*
+SUMMARY: Module to create a Storage Account
+DESCRIPTION: This module will create a deployment which will create a Storage Account
+AUTHOR/S: David Smith (CSA FSI)
+*/
+
+param namePrefix string
+var location = resourceGroup().location
+var unique = uniqueString(resourceGroup().id)
+var subName = '${namePrefix}${location}${unique}'
+var Name = substring(subName, 0, 24) // Storage account name must be between 3 and 24 characters in length and use numbers and lower-case letters only
 param logAnalyticsWorkspaceId string
-var uniqueName = '${name}${uniqueString(resourceGroup().id)}'
 var logSettings = [
   {
     category: 'StorageRead'
@@ -23,9 +30,11 @@ var logSettings = [
 // Resources
 @description('Storage account')
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-05-01' = {
-  name: toLower(uniqueName)
+  name: toLower(Name) // Storage account names must be lowercase
   location: location
-  sku: sku
+  sku: {
+    name: 'Standard_LRS'
+  }
   kind: 'StorageV2'
 }
 

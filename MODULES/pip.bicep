@@ -1,8 +1,17 @@
-// Parameters & variables
-@description('VM Name, Location and DNS Label Prefix')
-param namePrefix string
-param location string
-param dnsLabelPrefix string = toLower('${namePrefix}-${uniqueString(resourceGroup().id, namePrefix)}')
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+/*
+SUMMARY: Module to create a Public IP Address
+DESCRIPTION: This module will create a deployment which will create a Public IP Address
+AUTHOR/S: David Smith (CSA FSI)
+*/
+
+// param namePrefix string
+// var nameSuffix = 'pip'
+var location = resourceGroup().location
+param Name string
+var unique = substring(uniqueString(resourceGroup().id), 0, 8)
+var dnsLabelPrefix = '${Name}-${unique}'
 param logAnalyticsWorkspaceId string
 param skuName string
 var publicIPAllocationMethod = (skuName == 'Standard') ? 'Static' : 'Dynamic'
@@ -10,7 +19,7 @@ var publicIPAllocationMethod = (skuName == 'Standard') ? 'Static' : 'Dynamic'
 // Resources
 @description('Public IP address')
 resource pip 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
-  name: '${namePrefix}-pip'
+  name: Name
   location: location
   sku: {
     name: skuName

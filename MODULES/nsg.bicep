@@ -1,43 +1,25 @@
-// Parameters & variables
-@description('VM Name, Location and my IP address')
-param vmName string
-param location string
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+/*
+SUMMARY: Module to create a Network Security Groups.
+DESCRIPTION: This module will create a deployment which will create NSGs 
+AUTHOR/S: David Smith (CSA FSI)
+*/
+
+param namePrefix string
+var nameSuffix = 'nsg'
+var location = resourceGroup().location
+var Name = '${namePrefix}-${location}-${nameSuffix}'
+param securityRules array
 param logAnalyticsWorkspaceId string
 
 // Resources
 @description('Network Security Group and rules')
 resource nsg 'Microsoft.Network/networkSecurityGroups@2024-01-01' = {
-  name: '${vmName}-${location}-nsg'
+  name: Name
   location: location
   properties: {
-    securityRules: [
-      {
-        name: 'Allow-HTTP-From-Specific-IP'
-        properties: {
-          priority: 1000
-          direction: 'Inbound'
-          access: 'Allow'
-          protocol: 'Tcp'
-          sourcePortRange: '*'
-          destinationPortRange: '80'
-          sourceAddressPrefix: '*'
-          destinationAddressPrefix: '*'
-        }
-      }
-      {
-        name: 'Allow-Internet-Outbound'
-        properties: {
-          priority: 200
-          direction: 'Outbound'
-          access: 'Allow'
-          protocol: 'Tcp'
-          sourcePortRange: '*'
-          destinationPortRange: '*'
-          sourceAddressPrefix: '*'
-          destinationAddressPrefix: 'Internet'
-        }
-      }
-    ]
+    securityRules: securityRules
   }
 }
 

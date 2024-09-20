@@ -1,13 +1,23 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+/*
+SUMMARY: Module to create an Automation Account.
+DESCRIPTION: This module will create a deployment which will create the Automation Account
+AUTHOR/S: David Smith (CSA FSI)
+*/
+
 // Parameters & variables
 @description('Automation Account Name & Location')
-param vaultName string
-param location string
+param namePrefix string
+var nameSuffix = 'automation'
+var location = resourceGroup().location
+var Name = '${namePrefix}-${location}-${nameSuffix}'
 param logAnalyticsWorkspaceId string
 
 // Resources
 @description('Automation Account')
 resource automationAccount 'Microsoft.Automation/automationAccounts@2023-11-01' = {
-  name: vaultName
+  name: Name
   location: location
   identity: {
     type: 'SystemAssigned'
