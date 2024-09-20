@@ -1,7 +1,16 @@
-# Import the module
-Import-Module powershell-yaml
-Import-Module Az
-
+# Import the modules
+if (-not (Get-Module -Name "powershell-yaml")) {
+    Import-Module -Name "powershell-yaml"
+}
+else {
+    Write-Output "Module 'powershell-yaml' is already loaded."
+}
+if (-not (Get-Module -Name "Az")) {
+    Import-Module -Name "Az"
+}
+else {
+    Write-Output "Module 'Az' is already loaded."
+}
 
 # Convert the YAML content to a PowerShell object
 $varParameters = ConvertFrom-Yaml -Yaml $(Get-Content -Path "./deployparam.yaml" -Raw)
