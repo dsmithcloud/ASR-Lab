@@ -163,7 +163,8 @@ module keyvault './MODULES/keyvault.bicep' = {
     namePrefix: parDeploymentPrefix
     secretName: 'vmAdminPassword'
     vmAdminPassword: vmAdminPassword
-    // userPrincipalId: '00000000-0000-0000-0000-000000000000'
+    userPrincipalId: 'f07e7ee2-d553-4c07-ba96-369a7500f87b'
+    logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
   }
   dependsOn: [
     logAnalytics
