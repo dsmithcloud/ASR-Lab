@@ -1,0 +1,51 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+/*
+SUMMARY: Module to create a Key Vault
+DESCRIPTION: This module will create a deployment which will create the Key Vault
+AUTHOR/S: David Smith (CSA FSI)
+*/
+
+param namePrefix string
+var nameSuffix = 'kv'
+var location = resourceGroup().location
+// var unique = substring(uniqueString(resourceGroup().id), 0, 8)  
+var Name = '${namePrefix}-${location}-${nameSuffix}' // must be between 3-24 alphanumeric characters
+param secretName string
+@secure()
+param vmAdminPassword string
+
+resource keyVault 'Microsoft.KeyVault/vaults@2024-04-01-preview' = {
+  name: Name
+  location: location
+  properties: {
+    sku: {
+      family: 'A'
+      name: 'standard'
+    }
+    tenantId: subscription().tenantId
+    accessPolicies: []
+  }
+}
+
+resource secret 'Microsoft.KeyVault/vaults/secrets@2024-04-01-preview' = {
+  parent: keyVault
+  name: secretName
+  properties: {
+    value: vmAdminPassword
+  }
+}
+
+// resource roleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+//   name: guid(keyVault.id, 'Key Vault Secrets User', userPrincipalId)
+//   scope: keyVault
+//   properties: {
+//     roleDefinitionId: subscriptionResourceId(
+//       'Microsoft.Authorization/roleDefinitions',
+//       '4633458b-17de-408a-b874-0445c86b69e6'
+//     ) // Key Vault Secrets User role
+//     principalId: userPrincipalId
+//   }
+// }
+
+output keyVaultUri string = keyVault.properties.vaultUri
