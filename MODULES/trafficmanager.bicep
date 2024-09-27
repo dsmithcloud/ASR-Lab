@@ -1,21 +1,30 @@
-// Parameters & variables
-@description('Traffic Manager Profile Name, Endpoint 1 Target, Endpoint 2 Target')
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+/*
+SUMMARY: Module to create an Azure Traffic Manager
+DESCRIPTION: This module will create a deployment which will create an Azure Traffic Manager
+AUTHOR/S: David Smith (CSA FSI)
+*/
+
+param namePrefix string
+var nameSuffix = 'bastion'
+var location = resourceGroup().location
+var unique = substring(uniqueString(resourceGroup().id), 0, 8)
+var Name = '${namePrefix}-${location}-${nameSuffix}-${unique}'
 param endpoint1Target string
 param endpoint2Target string
-param profileName string
 param logAnalyticsWorkspaceId string
-var tmName = '${profileName}${uniqueString(resourceGroup().id)}'
 
 //Resources
 @description('Traffic Manager Profile')
 resource trafficManager 'Microsoft.Network/trafficmanagerprofiles@2022-04-01' = {
-  name: tmName
+  name: Name
   location: 'global'
   properties: {
     profileStatus: 'Enabled'
     trafficRoutingMethod: 'Priority'
     dnsConfig: {
-      relativeName: tmName
+      relativeName: Name
       ttl: 30
     }
     monitorConfig: {
