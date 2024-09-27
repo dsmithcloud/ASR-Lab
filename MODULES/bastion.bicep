@@ -17,7 +17,7 @@ module bastionpublicIp './pip.bicep' = {
   name: '${Name}-pip'
   scope: resourceGroup()
   params: {
-    Name: '${Name}-pip'
+    Name: Name
     logAnalyticsWorkspaceId: logAnalyticsWorkspaceId
     skuName: 'Standard'
   }
