@@ -22,37 +22,63 @@ var defaultNSGRules = [
       access: 'Allow'
       protocol: 'Tcp'
       sourcePortRange: '*'
+      sourceAddressPrefix: vnetConfig.subnets[1].addressPrefix
       destinationPortRanges: [
         '3389'
         '22'
       ]
-      sourceAddressPrefix: vnetConfig.subnets[1].addressPrefix
       destinationAddressPrefix: '*'
     }
   }
   {
-    name: 'Allow-HTTP-From-Specific-IP'
+    name: 'AllowHTTPInbound'
     properties: {
       priority: 110
       direction: 'Inbound'
       access: 'Allow'
       protocol: 'Tcp'
       sourcePortRange: '*'
+      sourceAddressPrefix: 'AzureTrafficManager'
       destinationPortRange: '80'
-      sourceAddressPrefix: '*'
-      destinationAddressPrefix: '*'
+      destinationAddressPrefix: 'VirtualNetwork'
     }
   }
   {
-    name: 'Allow-Internet-Outbound'
+    name: 'AllowLBInbound'
     properties: {
       priority: 120
+      direction: 'Inbound'
+      access: 'Allow'
+      protocol: 'Tcp'
+      sourcePortRange: '*'
+      sourceAddressPrefix: 'AzureLoadBalancer'
+      destinationPortRange: '80'
+      destinationAddressPrefix: 'VirtualNetwork'
+    }
+  }
+  {
+    name: 'AllowHTTPBackend'
+    properties: {
+      priority: 200
+      direction: 'Inbound'
+      access: 'Allow'
+      protocol: 'Tcp'
+      sourcePortRange: '*'
+      sourceAddressPrefix: 'AzureLoadBalancer'
+      destinationPortRange: '80'
+      destinationAddressPrefix: 'VirtualNetwork'
+    }
+  }
+  {
+    name: 'AllowHTTPOutbound'
+    properties: {
+      priority: 300
       direction: 'Outbound'
       access: 'Allow'
       protocol: 'Tcp'
       sourcePortRange: '*'
-      destinationPortRange: '*'
-      sourceAddressPrefix: '*'
+      sourceAddressPrefix: 'VirtualNetwork'
+      destinationPortRange: '80'
       destinationAddressPrefix: 'Internet'
     }
   }
@@ -67,8 +93,8 @@ var bastionNSGRules = [
       access: 'Allow'
       protocol: 'Tcp'
       sourcePortRange: '*'
-      destinationPortRange: '443'
       sourceAddressPrefix: 'Internet'
+      destinationPortRange: '443'
       destinationAddressPrefix: '*'
     }
   }
@@ -80,8 +106,8 @@ var bastionNSGRules = [
       access: 'Allow'
       protocol: 'Tcp'
       sourcePortRange: '*'
-      destinationPortRange: '443'
       sourceAddressPrefix: 'GatewayManager'
+      destinationPortRange: '443'
       destinationAddressPrefix: '*'
     }
   }
@@ -93,8 +119,8 @@ var bastionNSGRules = [
       access: 'Allow'
       protocol: 'Tcp'
       sourcePortRange: '*'
-      destinationPortRange: '443'
       sourceAddressPrefix: 'AzureLoadBalancer'
+      destinationPortRange: '443'
       destinationAddressPrefix: '*'
     }
   }
@@ -106,11 +132,11 @@ var bastionNSGRules = [
       access: 'Allow'
       protocol: '*'
       sourcePortRange: '*'
+      sourceAddressPrefix: 'VirtualNetwork'
       destinationPortRanges: [
         '8080'
         '5701'
       ]
-      sourceAddressPrefix: 'VirtualNetwork'
       destinationAddressPrefix: 'VirtualNetwork'
     }
   }
@@ -122,11 +148,11 @@ var bastionNSGRules = [
       access: 'Allow'
       protocol: '*'
       sourcePortRange: '*'
+      sourceAddressPrefix: '*'
       destinationPortRanges: [
         '22'
         '3389'
       ]
-      sourceAddressPrefix: '*'
       destinationAddressPrefix: 'VirtualNetwork'
     }
   }
@@ -138,8 +164,8 @@ var bastionNSGRules = [
       access: 'Allow'
       protocol: 'Tcp'
       sourcePortRange: '*'
-      destinationPortRange: '443'
       sourceAddressPrefix: '*'
+      destinationPortRange: '443'
       destinationAddressPrefix: 'AzureCloud'
     }
   }
@@ -151,11 +177,11 @@ var bastionNSGRules = [
       access: 'Allow'
       protocol: '*'
       sourcePortRange: '*'
+      sourceAddressPrefix: 'VirtualNetwork'
       destinationPortRanges: [
         '8080'
         '5701'
       ]
-      sourceAddressPrefix: 'VirtualNetwork'
       destinationAddressPrefix: 'VirtualNetwork'
     }
   }
@@ -167,39 +193,19 @@ var bastionNSGRules = [
       access: 'Allow'
       protocol: '*'
       sourcePortRange: '*'
-      destinationPortRange: '80'
       sourceAddressPrefix: '*'
+      destinationPortRange: '80'
       destinationAddressPrefix: 'Internet'
     }
   }
 ]
 
 // Resources
-@description('Virtual Network')
-resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-01-01' = {
-  name: Name
-  location: location
-  properties: {
-    addressSpace: vnetConfig.addressSpace
-    subnets: [
-      for subnet in vnetConfig.subnets: {
-        name: subnet.name
-        properties: {
-          addressPrefix: subnet.addressPrefix
-        }
-      }
-    ]
-  }
-}
-
 @description('Network Security Group for the subnets')
 module nsg './nsg.bicep' = [
   for subnet in vnetConfig.subnets: {
     name: '${Name}-${subnet.name}-nsg'
     scope: resourceGroup()
-    dependsOn: [
-      virtualNetwork
-    ]
     params: {
       namePrefix: '${Name}-${vnetConfig.subnets[0].name}'
       logAnalyticsWorkspaceId: logAnalyticsWorkspaceId
@@ -207,6 +213,30 @@ module nsg './nsg.bicep' = [
     }
   }
 ]
+
+@description('Virtual Network')
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-01-01' = {
+  name: Name
+  location: location
+  dependsOn: [
+    nsg
+  ]
+  properties: {
+    addressSpace: vnetConfig.addressSpace
+    subnets: [
+      for subnet in vnetConfig.subnets: {
+        name: subnet.name
+        properties: {
+          addressPrefix: subnet.addressPrefix
+          networkSecurityGroup: {
+            // id: resourceId('Microsoft.Network/networkSecurityGroups', '${namePrefix}-${location}-${nameSuffix}-nsg')
+            id: nsg[subnet.name == 'AzureBastionSubnet' ? 1 : 0].outputs.nsgId
+          }
+        }
+      }
+    ]
+  }
+}
 
 @description('Define the Diagnostic Settings for the VNet')
 resource vnetDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
