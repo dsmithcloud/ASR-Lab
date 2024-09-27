@@ -39,11 +39,11 @@ $action = New-ScheduledTaskAction -Execute 'PowerShell.exe' -Argument "-NoProfil
 
 # Define the trigger to run every minute
 # $trigger = New-ScheduledTaskTrigger -AtStartup -RepetitionInterval (New-TimeSpan -Minutes 1) -RepetitionDuration ([timeSpan]::MaxValue)
-$nowTrigger = New-ScheduledTaskTrigger -Once -At (Get-Date).DateTime `
--RepetitionInterval (New-TimeSpan -Minutes 1) `
--RepetitionDuration ([TimeSpan]::MaxValue)
+# $nowTrigger = New-ScheduledTaskTrigger -Once -At (Get-Date).DateTime `
+# -RepetitionInterval (New-TimeSpan -Minutes 1) `
+# -RepetitionDuration ([TimeSpan]::MaxValue)
 
-$startupTrigger = New-ScheduledTaskTrigger -AtStartup `
+$Trigger = New-ScheduledTaskTrigger -AtStartup `
 -RepetitionInterval (New-TimeSpan -Minutes 1) `
 -RepetitionDuration ([TimeSpan]::MaxValue)
 
@@ -54,6 +54,6 @@ $combinedTrigger = @($nowTrigger, $startupTrigger)
 $principal = New-ScheduledTaskPrincipal -UserId "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount -RunLevel Highest
 
 # Create the scheduled task
-Register-ScheduledTask -TaskName "MyPowerShellTask" -Action $action -Trigger $combinedTrigger -Principal $principal -Description "Runs specific PowerShell commands every minute"
+Register-ScheduledTask -TaskName "MyPowerShellTask" -Action $action -Trigger $Trigger -Principal $principal -Description "Runs specific PowerShell commands every minute"
 
-# Start-ScheduledTask -TaskName "MyPowerShellTask"
+Start-ScheduledTask -TaskName "MyPowerShellTask"
