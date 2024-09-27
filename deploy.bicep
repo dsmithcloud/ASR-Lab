@@ -164,6 +164,20 @@ module kv './MODULES/keyvault.bicep' = {
   ]
 }
 
+@description('Load Balancer')
+module lb './Modules/loadbalancer.bicep' = {
+  name: 'loadbalancer'
+  scope: sourceRG
+  params: {
+    namePrefix: parDeploymentPrefix
+    logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
+  }
+  dependsOn: [
+    logAnalytics
+    sourceVnet
+  ]
+}
+
 @description('VM deployments')
 var adminUsername = 'azadmin'
 var vmSubnetId = sourceVnet.outputs.subnets[0].id
