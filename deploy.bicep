@@ -195,7 +195,7 @@ var adminUsername = 'azadmin'
 var vmSubnetId = sourceVnet.outputs.subnets[0].id
 module vmDeployments './MODULES/vm.bicep' = [
   for vmConfig in vmConfigs: if (vmConfig.deploy) {
-    name: 'vm-${vmConfig.purpose}'
+    name: 'vm-${vmConfig.nameSuffix}'
     scope: sourceRG
     dependsOn: [
       sourceVnet
