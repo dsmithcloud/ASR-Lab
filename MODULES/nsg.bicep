@@ -9,7 +9,7 @@ AUTHOR/S: David Smith (CSA FSI)
 param namePrefix string
 var nameSuffix = 'nsg'
 var location = resourceGroup().location
-var Name = '${namePrefix}-${location}-${nameSuffix}'
+var Name = '${namePrefix}-${nameSuffix}'
 param securityRules array
 param logAnalyticsWorkspaceId string
 
@@ -25,7 +25,7 @@ resource nsg 'Microsoft.Network/networkSecurityGroups@2024-01-01' = {
 
 // Define the Diagnostic Settings for the NSG
 resource nsgDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${nsg.name}-diag'
+  name: '${Name}-diag'
   scope: nsg
   properties: {
     logs: [
@@ -45,4 +45,5 @@ resource nsgDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
 
 // Output
 @description('Output the NSG ID')
+output name string = Name
 output nsgId string = nsg.id

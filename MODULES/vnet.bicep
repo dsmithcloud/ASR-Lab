@@ -9,7 +9,7 @@ AUTHOR/S: David Smith (CSA FSI)
 param namePrefix string
 var location = resourceGroup().location
 var nameSuffix = 'vnet'
-var Name = '${namePrefix}-${location}-${nameSuffix}'
+var vnetName = '${namePrefix}-${location}-${nameSuffix}'
 param vnetConfig object
 param logAnalyticsWorkspaceId string
 @description('Network Security Group for the subnets')
@@ -204,10 +204,10 @@ var bastionNSGRules = [
 @description('Network Security Group for the subnets')
 module nsg './nsg.bicep' = [
   for subnet in vnetConfig.subnets: {
-    name: '${Name}-${subnet.name}-nsg'
+    name: '${vnetName}-${subnet.name}-nsg'
     scope: resourceGroup()
     params: {
-      namePrefix: '${Name}-${vnetConfig.subnets[0].name}'
+      namePrefix: '${vnetName}-${subnet.name}'
       logAnalyticsWorkspaceId: logAnalyticsWorkspaceId
       securityRules: (subnet.name == 'AzureBastionSubnet') ? bastionNSGRules : defaultNSGRules
     }
@@ -216,7 +216,7 @@ module nsg './nsg.bicep' = [
 
 @description('Virtual Network')
 resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-01-01' = {
-  name: Name
+  name: vnetName
   location: location
   dependsOn: [
     nsg
@@ -240,7 +240,7 @@ resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-01-01' = {
 
 @description('Define the Diagnostic Settings for the VNet')
 resource vnetDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: '${virtualNetwork.name}-diag'
+  name: '${vnetName}-diag'
   scope: virtualNetwork
   properties: {
     logs: [
@@ -262,6 +262,6 @@ resource vnetDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
 // Output
 @description('Output the virtual network ID & subnets')
 output vnets object = virtualNetwork
-output name string = virtualNetwork.name
+output name string = vnetName
 output id string = virtualNetwork.id
 output subnets array = virtualNetwork.properties.subnets
