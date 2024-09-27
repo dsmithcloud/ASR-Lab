@@ -38,17 +38,9 @@ Invoke-WebRequest -Uri "https://raw.githubusercontent.com/dsmithcloud/ASR-Lab/re
 $action = New-ScheduledTaskAction -Execute 'PowerShell.exe' -Argument "-NoProfile -WindowStyle Hidden -File c:\inetpub\wwwroot\update-htmlcontent.ps1"
 
 # Define the trigger to run every minute
-# $trigger = New-ScheduledTaskTrigger -AtStartup -RepetitionInterval (New-TimeSpan -Minutes 1) -RepetitionDuration ([timeSpan]::MaxValue)
-# $nowTrigger = New-ScheduledTaskTrigger -Once -At (Get-Date).DateTime `
-# -RepetitionInterval (New-TimeSpan -Minutes 1) `
-# -RepetitionDuration ([TimeSpan]::MaxValue)
-
 $Trigger = New-ScheduledTaskTrigger -AtStartup `
 -RepetitionInterval (New-TimeSpan -Minutes 1) `
 -RepetitionDuration ([TimeSpan]::MaxValue)
-
-# Combine the triggers
-$combinedTrigger = @($nowTrigger, $startupTrigger)
 
 # Define the principal (run as the current user)
 $principal = New-ScheduledTaskPrincipal -UserId "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount -RunLevel Highest
