@@ -40,11 +40,11 @@ resource networkInterface 'Microsoft.Network/networkInterfaces@2024-01-01' = {
           subnet: {
             id: subnetId
           }
-          // loadBalancerBackendAddressPools: [
-          //   {
-          //     id: backendAddressPools[0].id
-          //   }
-          // ]
+          loadBalancerBackendAddressPools: [
+            {
+              id: backendAddressPools[0].id
+            }
+          ]
           privateIPAllocationMethod: 'Dynamic'
           publicIPAddress: publicIp
             ? {
