@@ -15,9 +15,35 @@ param logAnalyticsWorkspaceId string
 @description('Network Security Group for the subnets')
 var defaultNSGRules = [
   {
-    name: 'IngressfromAzureBastion'
+    name: 'AllowHTTPFromInternet'
     properties: {
       priority: 100
+      direction: 'Inbound'
+      access: 'Allow'
+      protocol: 'Tcp'
+      sourcePortRange: '*'
+      sourceAddressPrefix: 'Internet'
+      destinationPortRange: '80'
+      destinationAddressPrefix: 'VirtualNetwork'
+    }
+  }
+  {
+    name: 'AllowHTTPFromLoadBalancer'
+    properties: {
+      priority: 110
+      direction: 'Inbound'
+      access: 'Allow'
+      protocol: 'Tcp'
+      sourcePortRange: '*'
+      sourceAddressPrefix: 'AzureLoadBalancer'
+      destinationPortRange: '80'
+      destinationAddressPrefix: 'VirtualNetwork'
+    }
+  }
+  {
+    name: 'IngressfromAzureBastion'
+    properties: {
+      priority: 200
       direction: 'Inbound'
       access: 'Allow'
       protocol: 'Tcp'
@@ -31,48 +57,9 @@ var defaultNSGRules = [
     }
   }
   {
-    name: 'AllowHTTPInbound'
-    properties: {
-      priority: 110
-      direction: 'Inbound'
-      access: 'Allow'
-      protocol: 'Tcp'
-      sourcePortRange: '*'
-      sourceAddressPrefix: 'AzureTrafficManager'
-      destinationPortRange: '80'
-      destinationAddressPrefix: 'VirtualNetwork'
-    }
-  }
-  {
-    name: 'AllowLBInbound'
-    properties: {
-      priority: 120
-      direction: 'Inbound'
-      access: 'Allow'
-      protocol: 'Tcp'
-      sourcePortRange: '*'
-      sourceAddressPrefix: 'AzureLoadBalancer'
-      destinationPortRange: '80'
-      destinationAddressPrefix: 'VirtualNetwork'
-    }
-  }
-  {
-    name: 'AllowHTTPBackend'
-    properties: {
-      priority: 200
-      direction: 'Inbound'
-      access: 'Allow'
-      protocol: 'Tcp'
-      sourcePortRange: '*'
-      sourceAddressPrefix: 'AzureLoadBalancer'
-      destinationPortRange: '80'
-      destinationAddressPrefix: 'VirtualNetwork'
-    }
-  }
-  {
     name: 'AllowHTTPOutbound'
     properties: {
-      priority: 300
+      priority: 120
       direction: 'Outbound'
       access: 'Allow'
       protocol: 'Tcp'
