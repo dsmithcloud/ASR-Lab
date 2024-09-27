@@ -9,7 +9,7 @@ AUTHOR/S: David Smith (CSA FSI)
 // Scope
 targetScope = 'subscription'
 
-// Parameters & variables (see deploy.bicepparam file)
+// Parameters & variables (see deployparam.yaml file)
 @description('Deployment Prefix')
 param parDeploymentPrefix string
 @description('Source VM Region')
@@ -22,7 +22,7 @@ param vmAdminPassword string
 param sourceVnetConfig object
 @description('VNet configurations for target')
 param targetVnetConfig object
-// param sourceVmConfig object
+param vmConfigs array
 
 // Resources
 @description('Resource Groups for source and target')
@@ -109,30 +109,23 @@ module peerSourceToTarget './MODULES/vnetpeer.bicep' = {
   scope: sourceRG
   params: {
     parHomeNetworkName: sourceVnet.outputs.name
-    parRemoteNetworkId: targetVnet.outputs.vnetId
+    parRemoteNetworkId: targetVnet.outputs.id
     parUseRemoteGateways: false
     parAllowGatewayTransit: false
   }
-  dependsOn: [
-    sourceVnet
-    targetVnet
-  ]
 }
 module peerTargetToSource './MODULES/vnetpeer.bicep' = {
   name: 'peer-${targetVnet.name}-${sourceVnet.name}'
   scope: targetRG
   params: {
     parHomeNetworkName: targetVnet.outputs.name
-    parRemoteNetworkId: sourceVnet.outputs.vnetId
+    parRemoteNetworkId: sourceVnet.outputs.id
     parUseRemoteGateways: false
     parAllowGatewayTransit: false
   }
-  dependsOn: [
-    sourceVnet
-    targetVnet
-  ]
 }
 
+@description('Azure Bastion in the source region')
 module bastion './MODULES/bastion.bicep' = {
   name: 'bastion'
   scope: sourceRG
@@ -156,7 +149,7 @@ module bastion './MODULES/bastion.bicep' = {
 }
 
 @description('Key Vault in the source region')
-module keyvault './MODULES/keyvault.bicep' = {
+module kv './MODULES/keyvault.bicep' = {
   name: 'keyvault'
   scope: sourceRG
   params: {
@@ -171,58 +164,43 @@ module keyvault './MODULES/keyvault.bicep' = {
   ]
 }
 
-// @description('Public IP configurations for source and target')
-// module publicIp1 './MODULES/pip.bicep' = {
-//   name: '${sourceRGconfig.location}-pip'
-//   scope: sourceRG
-//   params: {
-//     namePrefix: sourceVmConfig.vmName
-//     location: sourceRGconfig.location
-//     logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
-//     skuName: 'Basic'
-//   }
-// }
-// module publicIp2 './MODULES/pip.bicep' = {
-//   name: '${targetRGconfig.location}-pip'
-//   scope: targetRG
-//   params: {
-//     namePrefix: sourceVmConfig.vmName
-//     location: targetRGconfig.location
-//     logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
-//     skuName: 'Basic'
-//   }
-// }
-
-// @description('Source VM configuration')
-// module sourceVm './MODULES/vm.bicep' = {
-//   name: sourceVmConfig.vmName
-//   scope: sourceRG
-//   params: {
-//     vmName: sourceVmConfig.vmName
-//     location: sourceVmConfig.location
-//     hardwareProfile: sourceVmConfig.properties.hardwareProfile
-//     osProfile: sourceVmConfig.properties.osProfile
-//     storageProfile: sourceVmConfig.properties.storageProfile
-//     subnetId: sourceVnet.outputs.subnets[0].id
-//     publicIp: publicIp1.outputs.pipId
-//     nsgId: nsg1.outputs.nsgId
-//     logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
-//   }
-//   dependsOn: [
-//     sourceVnet
-//     publicIp1
-//     nsg1
-//     peerSourceToTarget
-//     peerTargetToSource
-//   ]
-// }
+@description('VM deployments')
+var adminUsername = 'azadmin'
+var vmSubnetId = sourceVnet.outputs.subnets[0].id
+module vmDeployments './MODULES/vm.bicep' = [
+  for vmConfig in vmConfigs: if (vmConfig.deploy) {
+    name: 'vm-${vmConfig.purpose}'
+    scope: sourceRG
+    dependsOn: [
+      sourceVnet
+    ]
+    params: {
+      namePrefix: parDeploymentPrefix
+      nameSuffix: vmConfig.nameSuffix
+      purpose: vmConfig.purpose
+      vmSize: vmConfig.vmSize
+      osDiskSize: vmConfig.osDiskSize
+      dataDiskSize: vmConfig.dataDiskSize
+      osType: vmConfig.osType
+      adminUsername: adminUsername
+      adminPassword: vmAdminPassword
+      imagePublisher: vmConfig.imagePublisher
+      imageOffer: vmConfig.imageOffer
+      imageSku: vmConfig.imageSku
+      imageVersion: vmConfig.imageVersion
+      publicIp: vmConfig.publicIp
+      subnetId: vmSubnetId
+      logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
+    }
+  }
+]
 
 // @description('Traffic Manager profile for the web site on the source VM')
 // module trafficManager './MODULES/trafficmanager.bicep' = {
 //   scope: sourceRG
 //   name: 'myTrafficManagerProfile'
 //   params: {
-//     profileName: sourceVmConfig.vmName
+//     profileName: vmConfig.vmName
 //     endpoint1Target: publicIp1.outputs.pipFqdn
 //     endpoint2Target: publicIp2.outputs.pipFqdn
 //     logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
@@ -231,3 +209,4 @@ module keyvault './MODULES/keyvault.bicep' = {
 
 // // Output
 // output fqdn string = trafficManager.outputs.trafficManagerfqdn
+// output vmNames string = vmNames
