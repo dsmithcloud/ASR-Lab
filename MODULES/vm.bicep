@@ -127,23 +127,23 @@ resource virtualMachine 'Microsoft.Compute/virtualMachines@2024-03-01' = {
   }
 }
 
-// @description('Custom script extension to deploy IIS')
-// resource iisExtension 'Microsoft.Compute/virtualMachines/extensions@2024-03-01' = if (purpose == 'web') {
-//   parent: virtualMachine
-//   name: 'iisExtension'
-//   location: location
-//   properties: {
-//     publisher: 'Microsoft.Compute'
-//     type: 'CustomScriptExtension'
-//     typeHandlerVersion: '1.10'
-//     settings: {
-//       fileUris: [
-//         'https://raw.githubusercontent.com/dsmithcloud/ASR-Lab/refs/heads/main/DeployIIS.ps1'
-//       ]
-//       commandToExecute: 'powershell -ExecutionPolicy Unrestricted -File DeployIIS.ps1'
-//     }
-//   }
-// }
+@description('Custom script extension to deploy IIS')
+resource iisExtension 'Microsoft.Compute/virtualMachines/extensions@2024-03-01' = if (purpose == 'web') {
+  parent: virtualMachine
+  name: 'iisExtension'
+  location: location
+  properties: {
+    publisher: 'Microsoft.Compute'
+    type: 'CustomScriptExtension'
+    typeHandlerVersion: '1.10'
+    settings: {
+      fileUris: [
+        'https://raw.githubusercontent.com/dsmithcloud/ASR-Lab/refs/heads/main/DeployIIS.ps1'
+      ]
+      commandToExecute: 'powershell -ExecutionPolicy Unrestricted -File DeployIIS.ps1'
+    }
+  }
+}
 
 // @description('Custom script extension to deploy AdventureWorks database to SQL Server')
 // resource AdventureWorks 'Microsoft.Compute/virtualMachines/extensions@2021-07-01' = if (purpose == 'sql') {
