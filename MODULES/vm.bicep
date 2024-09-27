@@ -25,6 +25,7 @@ param imageVersion string
 param publicIp bool
 param subnetId string
 param logAnalyticsWorkspaceId string
+param backendAddressPools array
 
 // Resources
 @description('Network interface')
@@ -39,6 +40,11 @@ resource networkInterface 'Microsoft.Network/networkInterfaces@2024-01-01' = {
           subnet: {
             id: subnetId
           }
+          // loadBalancerBackendAddressPools: [
+          //   {
+          //     id: backendAddressPools[0].id
+          //   }
+          // ]
           privateIPAllocationMethod: 'Dynamic'
           publicIPAddress: publicIp
             ? {
