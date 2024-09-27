@@ -4,68 +4,56 @@ Install-WindowsFeature -name Web-Server -IncludeManagementTools
 # Define the HTML content
 $htmlContent = @"
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-    <title>VM Info</title>
-    <style>
-        body {
-            background-image: url('asrdemo.png');
-            background-size: cover;
-            color: white;
-            text-shadow: 2px 2px 4px #000000;
-        }
-
-        h1,
-        p {
-            background-color: rgba(0, 0, 0, 0.5);
-            padding: 10px;
-            border-radius: 5px;
-        }
-    </style>
-    <script>
-        function displayDateTime() {
-            var now = new Date();
-            document.getElementById("dateTime").innerHTML = now;
-        }
-
-        function fetchVmInfo() {
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', 'http://169.254.169.254/metadata/instance/compute?api-version=2021-02-01', true);
-            xhr.setRequestHeader('Metadata', 'true');
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    const response = JSON.parse(xhr.responseText);
-                    document.getElementById("vmName").innerHTML = response.name;
-                    document.getElementById("vmRegion").innerHTML = response.location;
-                }
-            };
-            xhr.send();
-        }
-
-        window.onload = function () {
-            fetchVmInfo();
-            displayDateTime();
-        };
-    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Server Details</title>
+    <link rel="stylesheet" href="index.css">
 </head>
-
 <body>
-    <h1>VM Information</h1>
-    <p>VM Name: <span id="vmName"></span></p>
-    <p>Azure Region: <span id="vmRegion"></span></p>
-    <p>Current Date and Time: <span id="dateTime"></span></p>
+<BR><BR><BR><DIV STYLE="background-color: #000000; color: #FFFFFF;" >ServerName<BR>Location<BR></DIV>
 </body>
-
 </html>
 "@
 
+$cssContent = @"
+body{
+/* single image */
+background-image: linear-gradient(black, white);
+background-image: url("asrdemo.png");
+}
+"@
+
 # Define the path to the default IIS site
-$defaultSitePath = "C:\inetpub\wwwroot\index.html"
+$defaultSitePath = "C:\inetpub\wwwroot"
 
-# Write the HTML content to the default site
-Set-Content -Path $defaultSitePath -Value $htmlContent
+# Write the HTML, CSS, background image, and powershell script content to the default site
+Set-Content -Path "${defaultSitePath}\index.html" -Value $htmlContent
+Set-content -path "${defaultSitePath}\index.css" -Value $cssContent
 Invoke-WebRequest -Uri "https://github.com/dsmithcloud/ASR-Lab/raw/main/MODULES/asrdemo.png" -OutFile "${defaultSitePath}\asrdemo.png"
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/dsmithcloud/ASR-Lab/refs/heads/main/MODULES/update-htmlcontent.ps1" -OutFile "${defaultSitePath}\update-htmlcontent.ps1"
 
-# Restart IIS to apply changes
-Restart-Service -Name 'W3SVC'
+# Define the action to run your commands
+$action = New-ScheduledTaskAction -Execute 'PowerShell.exe' -Argument "-NoProfile -WindowStyle Hidden -File c:\inetpub\wwwroot\update-htmlcontent.ps1"
+
+# Define the trigger to run every minute
+# $trigger = New-ScheduledTaskTrigger -AtStartup -RepetitionInterval (New-TimeSpan -Minutes 1) -RepetitionDuration ([timeSpan]::MaxValue)
+$nowTrigger = New-ScheduledTaskTrigger -Once -At (Get-Date).DateTime `
+-RepetitionInterval (New-TimeSpan -Minutes 1) `
+-RepetitionDuration ([TimeSpan]::MaxValue)
+
+$startupTrigger = New-ScheduledTaskTrigger -AtStartup `
+-RepetitionInterval (New-TimeSpan -Minutes 1) `
+-RepetitionDuration ([TimeSpan]::MaxValue)
+
+# Combine the triggers
+$combinedTrigger = @($nowTrigger, $startupTrigger)
+
+# Define the principal (run as the current user)
+$principal = New-ScheduledTaskPrincipal -UserId "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount -RunLevel Highest
+
+# Create the scheduled task
+Register-ScheduledTask -TaskName "MyPowerShellTask" -Action $action -Trigger $combinedTrigger -Principal $principal -Description "Runs specific PowerShell commands every minute"
+
+# Start-ScheduledTask -TaskName "MyPowerShellTask"
