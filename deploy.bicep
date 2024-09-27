@@ -165,9 +165,21 @@ module kv './MODULES/keyvault.bicep' = {
 }
 
 @description('Load Balancer')
-module lb './Modules/loadbalancer.bicep' = {
-  name: 'loadbalancer'
+module lbSource './Modules/loadbalancer.bicep' = {
+  name: 'lbSource'
   scope: sourceRG
+  params: {
+    namePrefix: parDeploymentPrefix
+    logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
+  }
+  dependsOn: [
+    logAnalytics
+    sourceVnet
+  ]
+}
+module lbTarget './Modules/loadbalancer.bicep' = {
+  name: 'lbTarget'
+  scope: targetRG
   params: {
     namePrefix: parDeploymentPrefix
     logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
@@ -187,6 +199,8 @@ module vmDeployments './MODULES/vm.bicep' = [
     scope: sourceRG
     dependsOn: [
       sourceVnet
+      lbSource
+      lbTarget
     ]
     params: {
       namePrefix: parDeploymentPrefix
@@ -204,23 +218,24 @@ module vmDeployments './MODULES/vm.bicep' = [
       imageVersion: vmConfig.imageVersion
       publicIp: vmConfig.publicIp
       subnetId: vmSubnetId
+      backendAddressPools: (vmConfig.purpose == 'web') ? lbSource.outputs.backendAddressPools : [null]
       logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
     }
   }
 ]
 
-// @description('Traffic Manager profile for the web site on the source VM')
-// module trafficManager './MODULES/trafficmanager.bicep' = {
-//   scope: sourceRG
-//   name: 'myTrafficManagerProfile'
-//   params: {
-//     profileName: vmConfig.vmName
-//     endpoint1Target: publicIp1.outputs.pipFqdn
-//     endpoint2Target: publicIp2.outputs.pipFqdn
-//     logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
-//   }
-// }
+@description('Traffic Manager profile for the web site on the source VM')
+module trafficManager './MODULES/trafficmanager.bicep' = {
+  scope: sourceRG
+  name: 'myTrafficManagerProfile'
+  params: {
+    namePrefix: parDeploymentPrefix
+    endpoint1Target: lbSource.outputs.fqdn
+    endpoint2Target: lbTarget.outputs.fqdn
+    logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
+  }
+}
 
 // // Output
-// output fqdn string = trafficManager.outputs.trafficManagerfqdn
+output fqdn string = trafficManager.outputs.trafficManagerfqdn
 // output vmNames string = vmNames
