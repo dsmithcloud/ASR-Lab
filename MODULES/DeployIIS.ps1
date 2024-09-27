@@ -34,18 +34,18 @@ Set-content -path "${defaultSitePath}\index.css" -Value $cssContent
 Invoke-WebRequest -Uri "https://github.com/dsmithcloud/ASR-Lab/raw/main/MODULES/asrdemo.png" -OutFile "${defaultSitePath}\asrdemo.png"
 Invoke-WebRequest -Uri "https://raw.githubusercontent.com/dsmithcloud/ASR-Lab/refs/heads/main/MODULES/update-htmlcontent.ps1" -OutFile "${defaultSitePath}\update-htmlcontent.ps1"
 
-# Define the action to run your commands
-$action = New-ScheduledTaskAction -Execute 'PowerShell.exe' -Argument "-NoProfile -WindowStyle Hidden -File c:\inetpub\wwwroot\update-htmlcontent.ps1"
+& "${defaultSitePath}\update-htmlcontent.ps1"
 
-# Define the trigger to run every minute
-$Trigger = New-ScheduledTaskTrigger -AtStartup `
--RepetitionInterval (New-TimeSpan -Minutes 1) `
--RepetitionDuration ([TimeSpan]::MaxValue)
+# Define the action to run the script
+$action = New-ScheduledTaskAction -Execute "PowerShell.exe" -Argument "-NoProfile -WindowStyle Hidden -File `"$defaultSitePath\update-htmlcontent.ps1`""
 
-# Define the principal (run as the current user)
-$principal = New-ScheduledTaskPrincipal -UserId "NT AUTHORITY\SYSTEM" -LogonType ServiceAccount -RunLevel Highest
+# Define the trigger to start at system startup and repeat every minute indefinitely
+$trigger = New-ScheduledTaskTrigger -AtStartup
 
-# Create the scheduled task
-Register-ScheduledTask -TaskName "MyPowerShellTask" -Action $action -Trigger $Trigger -Principal $principal -Description "Runs specific PowerShell commands every minute"
+# Define the principal with highest privileges
+$principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
 
-Start-ScheduledTask -TaskName "MyPowerShellTask"
+# Create the scheduled task and change the repetition
+Register-ScheduledTask -TaskName "MyScriptTask" -Action $action -Trigger $trigger -Principal $principal
+schtasks /Change /TN "MyScriptTask" /RI 1 /DU 9999
+
