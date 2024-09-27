@@ -2,6 +2,7 @@ $metadataUrl = "http://169.254.169.254/metadata/instance/compute?api-version=202
 $headers = @{ "Metadata" = "true" }
 $response = Invoke-RestMethod -Headers $headers -Uri $metadataUrl
 
+
 $serverName=$response.name
 $location=$response.location
 
