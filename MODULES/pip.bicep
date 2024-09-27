@@ -19,7 +19,7 @@ var publicIPAllocationMethod = (skuName == 'Standard') ? 'Static' : 'Dynamic'
 // Resources
 @description('Public IP address')
 resource pip 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
-  name: Name
+  name: '${Name}-pip'
   location: location
   sku: {
     name: skuName
