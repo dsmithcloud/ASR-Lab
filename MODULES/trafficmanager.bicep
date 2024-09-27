@@ -7,7 +7,7 @@ AUTHOR/S: David Smith (CSA FSI)
 */
 
 param namePrefix string
-var nameSuffix = 'bastion'
+var nameSuffix = 'trafficmanager'
 var location = resourceGroup().location
 var unique = substring(uniqueString(resourceGroup().id), 0, 8)
 var Name = '${namePrefix}-${location}-${nameSuffix}-${unique}'
