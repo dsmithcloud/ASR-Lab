@@ -40,11 +40,13 @@ resource networkInterface 'Microsoft.Network/networkInterfaces@2024-01-01' = {
           subnet: {
             id: subnetId
           }
-          loadBalancerBackendAddressPools: [
-            {
-              id: backendAddressPools[0].id
-            }
-          ]
+          loadBalancerBackendAddressPools: (purpose == 'web')
+            ? [
+                {
+                  id: backendAddressPools[0].id
+                }
+              ]
+            : []
           privateIPAllocationMethod: 'Dynamic'
           publicIPAddress: publicIp
             ? {
@@ -138,7 +140,7 @@ resource iisExtension 'Microsoft.Compute/virtualMachines/extensions@2024-03-01' 
     typeHandlerVersion: '1.10'
     settings: {
       fileUris: [
-        'https://raw.githubusercontent.com/dsmithcloud/ASR-Lab/refs/heads/main/DeployIIS.ps1'
+        'https://raw.githubusercontent.com/dsmithcloud/ASR-Lab/refs/heads/main/MODULES/DeployIIS.ps1'
       ]
       commandToExecute: 'powershell -ExecutionPolicy Unrestricted -File DeployIIS.ps1'
     }
