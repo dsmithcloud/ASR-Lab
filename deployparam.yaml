@@ -25,7 +25,7 @@ bicepParam:
   vmConfigs:
     -   purpose: "web"
         deploy: true
-        nameSuffix: "web"
+        nameSuffix: "web1"
         vmSize: "Standard_D2as_v5"
         osDiskSize: 127
         dataDiskSize: 0
@@ -35,6 +35,18 @@ bicepParam:
         imageSku: "2019-Datacenter"
         imageVersion: "latest"
         publicIp: true
+    # -   purpose: "web"
+    #     deploy: true
+    #     nameSuffix: "web2"
+    #     vmSize: "Standard_D2as_v5"
+    #     osDiskSize: 127
+    #     dataDiskSize: 0
+    #     osType: "Windows"
+    #     imagePublisher: "MicrosoftWindowsServer"
+    #     imageOffer: "WindowsServer"
+    #     imageSku: "2019-Datacenter"
+    #     imageVersion: "latest"
+    #     publicIp: true
     -   purpose: "sql"
         deploy: true
         nameSuffix: "sql"
