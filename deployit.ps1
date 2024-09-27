@@ -1,30 +1,3 @@
-# Import the modules
-if (-not (Get-Module -Name "powershell-yaml")) {
-    Import-Module -Name "powershell-yaml"
-}
-else {
-    Write-Output "Module 'powershell-yaml' is already loaded."
-}
-if (-not (Get-Module -Name "Az")) {
-    Import-Module -Name "Az"
-}
-else {
-    Write-Output "Module 'Az' is already loaded."
-}
-
-# Convert the YAML content to a PowerShell object
-$varParameters = ConvertFrom-Yaml -Yaml $(Get-Content -Path "./deployparam.yaml" -Raw)
-$varParameters.add("varTimeStamp", (Get-Date).ToString("yyyy-MM-ddTHH.mm.ss"))
-
-#constants
-$conMaxRetryAttemptTransientErrorRetry = 3
-$conRetry = $true
-$conRetryWaitTimeTransientErrorRetry = 10
-$conLoopCounter = 0
-
-#bicep files
-$biceptemplate = '.\deploy.bicep'
-
 function Enter-Login {
     Write-Information ">>> Initiating a login" -InformationAction Continue
     Connect-AzAccount
@@ -36,6 +9,7 @@ function Get-SignedInUser {
 
     if (!$varSignedInUserDetails) {
         Write-Information ">>> No logged in user found." -InformationAction Continue
+        # Enter-Login
     }
     else {
         return $varSignedInUserDetails.UserPrincipalName
@@ -86,8 +60,10 @@ function New-ASRDemo {
         vmadminPassword     = $varParameters.bicepParam.vmAdminPassword
         sourceVnetConfig    = $varParameters.bicepParam.sourceVnetConfig
         targetVnetConfig    = $varParameters.bicepParam.targetVnetConfig
+        vmConfigs           = $varParameters.bicepParam.vmConfigs
     }
 
+    # Get-SignedInUser
     Set-AzContext -subscription $varParameters.subscriptionId
 
     while ($conLoopCounter -lt $conMaxRetryAttemptTransientErrorRetry) {
@@ -125,16 +101,63 @@ function New-ASRDemo {
     }
 }
 
+# Import the modules
+$moduleName = "powershell-yaml"
+if (-not (Get-Module -Name $moduleName -ListAvailable)) {
+    Write-Output "Module '$moduleName' is not installed. Installing now..."
+    Install-Module -Name $moduleName -Force
+}
+else {
+    Write-Output "Module '$moduleName' is already installed."
+    if (-not (Get-Module -Name $moduleName)) {
+        Import-Module -Name $moduleName
+    }
+    else {
+        Write-Output "Module $moduleName is already loaded."
+    }
+}
+$moduleName = "Az"
+if (-not (Get-Module -Name $moduleName -ListAvailable)) {
+    Write-Output "Module '$moduleName' is not installed. Installing now..."
+    Install-Module -Name $moduleName -Force
+}
+else {
+    Write-Output "Module '$moduleName' is already installed."
+    Write-Output "Module '$moduleName' can take a minute or two to load."
+    if (-not (Get-Module -Name $moduleName)) {
+        Import-Module -Name $moduleName
+    }
+    else {
+        Write-Output "Module $moduleName is already loaded."
+    }
+}
+
 # Get the current Azure context
 $context = Get-AzContext
 
+# Checking if the user is logged in
 if ($context) {
     # If a context is found, display the account information
     Write-Output "User is logged in as: $($context.Account.Id)"
-} else {
+}
+else {
     # If no context is found, inform the user
     Write-Output "No user is currently logged in. Please log in to Azure now."
     Enter-Login
 }
+
+# Convert the YAML content to a PowerShell object
+write-output "Reading the YAML file"
+$varParameters = ConvertFrom-Yaml -Yaml $(Get-Content -Path "./deployparam.yaml" -Raw)
+$varParameters.add("varTimeStamp", (Get-Date).ToString("yyyy-MM-ddTHH.mm.ss"))
+
+#constants
+$conMaxRetryAttemptTransientErrorRetry = 3
+$conRetry = $true
+$conRetryWaitTimeTransientErrorRetry = 10
+$conLoopCounter = 0
+
+#bicep files
+$biceptemplate = '.\deploy.bicep'
 
 New-ASRDemo
