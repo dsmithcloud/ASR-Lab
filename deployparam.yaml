@@ -34,7 +34,7 @@ bicepParam:
         imageOffer: "WindowsServer"
         imageSku: "2019-Datacenter"
         imageVersion: "latest"
-        publicIp: true
+        publicIp: false
     # -   purpose: "web"
     #     deploy: true
     #     nameSuffix: "web2"
