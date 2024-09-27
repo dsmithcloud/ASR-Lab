@@ -10,7 +10,7 @@ param namePrefix string
 var location = resourceGroup().location
 var unique = uniqueString(resourceGroup().id)
 var subName = '${namePrefix}${location}${unique}'
-var Name = substring(subName, 0, 24) // Storage account name must be between 3 and 24 characters in length and use numbers and lower-case letters only
+var Name = length(subName) >= 24 ? substring(subName, 0, 24) : subName // Storage account name must be between 3 and 24 characters in length and use numbers and lower-case letters only
 param logAnalyticsWorkspaceId string
 var logSettings = [
   {
