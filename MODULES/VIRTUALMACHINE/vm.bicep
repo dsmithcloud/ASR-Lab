@@ -147,6 +147,22 @@ resource iisExtension 'Microsoft.Compute/virtualMachines/extensions@2024-03-01' 
   }
 }
 
+// Define the Diagnostic Settings for the NIC
+resource nicDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'nicDiagSettings'
+  scope: networkInterface
+  properties: {
+    logs: []
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+      }
+    ]
+    workspaceId: logAnalyticsWorkspaceId
+  }
+}
+
 // @description('Custom script extension to deploy AdventureWorks database to SQL Server')
 // resource AdventureWorks 'Microsoft.Compute/virtualMachines/extensions@2021-07-01' = if (purpose == 'sql') {
 //   parent: virtualMachine
@@ -179,22 +195,6 @@ resource iisExtension 'Microsoft.Compute/virtualMachines/extensions@2024-03-01' 
 //     settings: diagnosticConfig
 //   }
 // }
-
-// Define the Diagnostic Settings for the NIC
-resource nicDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: 'nicDiagSettings'
-  scope: networkInterface
-  properties: {
-    logs: []
-    metrics: [
-      {
-        category: 'AllMetrics'
-        enabled: true
-      }
-    ]
-    workspaceId: logAnalyticsWorkspaceId
-  }
-}
 
 // Output
 @description('Output the VM ID and NIC ID')
