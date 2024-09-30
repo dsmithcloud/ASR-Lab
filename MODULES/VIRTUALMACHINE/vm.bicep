@@ -140,7 +140,7 @@ resource iisExtension 'Microsoft.Compute/virtualMachines/extensions@2024-03-01' 
     typeHandlerVersion: '1.10'
     settings: {
       fileUris: [
-        'https://raw.githubusercontent.com/dsmithcloud/ASR-Lab/refs/heads/main/MODULES/DeployIIS.ps1'
+        'https://raw.githubusercontent.com/dsmithcloud/ASR-Lab/refs/heads/main/MODULES/VIRTUALMACHINE/DeployIIS.ps1'
       ]
       commandToExecute: 'powershell -ExecutionPolicy Unrestricted -File DeployIIS.ps1'
     }
