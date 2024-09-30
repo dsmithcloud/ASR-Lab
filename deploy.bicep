@@ -37,7 +37,7 @@ resource targetRG 'Microsoft.Resources/resourceGroups@2021-04-01' = {
 }
 
 @description('Log Analytics Account in Source Region')
-module logAnalytics './MODULES/monitor.bicep' = {
+module logAnalytics './MODULES/MONITORING/monitor.bicep' = {
   name: 'loganalytics'
   scope: sourceRG
   params: {
@@ -46,7 +46,7 @@ module logAnalytics './MODULES/monitor.bicep' = {
 }
 
 @description('ASR Vault in the target region')
-module asrvault './MODULES/asrvault.bicep' = {
+module asrvault './MODULES/SITERECOVERY/asrvault.bicep' = {
   name: 'asrvault'
   scope: targetRG
   params: {
@@ -59,7 +59,7 @@ module asrvault './MODULES/asrvault.bicep' = {
 }
 
 @description('Automation Account for ASR')
-module automationacct './MODULES/automation.bicep' = {
+module automationacct './MODULES/SITERECOVERY/automation.bicep' = {
   name: 'asr-automationaccount'
   scope: targetRG
   params: {
@@ -69,7 +69,7 @@ module automationacct './MODULES/automation.bicep' = {
 }
 
 @description('Storage account for ASR cache')
-module storageacct './MODULES/storage.bicep' = {
+module storageacct './MODULES/STORAGE/storage.bicep' = {
   name: 'storageacct-${sourceLocation}'
   scope: sourceRG
   params: {
@@ -79,7 +79,7 @@ module storageacct './MODULES/storage.bicep' = {
 }
 
 @description('VNet configurations for source and target')
-module sourceVnet './MODULES/vnet.bicep' = {
+module sourceVnet './MODULES/NETWORK/vnet.bicep' = {
   name: 'vnet-${sourceLocation}'
   scope: sourceRG
   params: {
@@ -91,7 +91,7 @@ module sourceVnet './MODULES/vnet.bicep' = {
     logAnalytics
   ]
 }
-module targetVnet './MODULES/vnet.bicep' = {
+module targetVnet './MODULES/NETWORK/vnet.bicep' = {
   name: 'vnet-${targetLocation}'
   scope: targetRG
   params: {
@@ -104,7 +104,7 @@ module targetVnet './MODULES/vnet.bicep' = {
   ]
 }
 
-module peerSourceToTarget './MODULES/vnetpeer.bicep' = {
+module peerSourceToTarget './MODULES/NETWORK/vnetpeer.bicep' = {
   name: 'peer-${sourceVnet.name}-${targetVnet.name}'
   scope: sourceRG
   params: {
@@ -114,7 +114,7 @@ module peerSourceToTarget './MODULES/vnetpeer.bicep' = {
     parAllowGatewayTransit: false
   }
 }
-module peerTargetToSource './MODULES/vnetpeer.bicep' = {
+module peerTargetToSource './MODULES/NETWORK/vnetpeer.bicep' = {
   name: 'peer-${targetVnet.name}-${sourceVnet.name}'
   scope: targetRG
   params: {
@@ -126,7 +126,7 @@ module peerTargetToSource './MODULES/vnetpeer.bicep' = {
 }
 
 @description('Azure Bastion in the source region')
-module bastion './MODULES/bastion.bicep' = {
+module bastion './MODULES/VIRTUALMACHINE/bastion.bicep' = {
   name: 'bastion'
   scope: sourceRG
   params: {
@@ -149,7 +149,7 @@ module bastion './MODULES/bastion.bicep' = {
 }
 
 @description('Key Vault in the source region')
-module kv './MODULES/keyvault.bicep' = {
+module kv './MODULES/SECURITY/keyvault.bicep' = {
   name: 'keyvault'
   scope: sourceRG
   params: {
@@ -165,7 +165,7 @@ module kv './MODULES/keyvault.bicep' = {
 }
 
 @description('Load Balancer')
-module lbSource './Modules/loadbalancer.bicep' = {
+module lbSource './MODULES/NETWORK/loadbalancer.bicep' = {
   name: 'lbSource'
   scope: sourceRG
   params: {
@@ -177,7 +177,7 @@ module lbSource './Modules/loadbalancer.bicep' = {
     sourceVnet
   ]
 }
-module lbTarget './Modules/loadbalancer.bicep' = {
+module lbTarget './MODULES/NETWORK/loadbalancer.bicep' = {
   name: 'lbTarget'
   scope: targetRG
   params: {
@@ -192,8 +192,7 @@ module lbTarget './Modules/loadbalancer.bicep' = {
 
 @description('VM deployments')
 var adminUsername = 'azadmin'
-var vmSubnetId = sourceVnet.outputs.subnets[0].id
-module vmDeployments './MODULES/vm.bicep' = [
+module vmDeployments './MODULES/VIRTUALMACHINE/vm.bicep' = [
   for vmConfig in vmConfigs: if (vmConfig.deploy) {
     name: 'vm-${vmConfig.nameSuffix}'
     scope: sourceRG
@@ -217,7 +216,7 @@ module vmDeployments './MODULES/vm.bicep' = [
       imageSku: vmConfig.imageSku
       imageVersion: vmConfig.imageVersion
       publicIp: vmConfig.publicIp
-      subnetId: vmSubnetId
+      subnetId: sourceVnet.outputs.subnets[0].id
       backendAddressPools: (vmConfig.purpose == 'web') ? lbSource.outputs.backendAddressPools : [null]
       logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
     }
@@ -225,7 +224,7 @@ module vmDeployments './MODULES/vm.bicep' = [
 ]
 
 @description('Traffic Manager profile for the web site on the source VM')
-module trafficManager './MODULES/trafficmanager.bicep' = {
+module trafficManager './MODULES/NETWORK/trafficmanager.bicep' = {
   scope: sourceRG
   name: 'myTrafficManagerProfile'
   params: {
@@ -237,5 +236,6 @@ module trafficManager './MODULES/trafficmanager.bicep' = {
 }
 
 // // Output
+output vmUserName string = adminUsername
 output fqdn string = trafficManager.outputs.trafficManagerfqdn
 // output vmNames string = vmNames

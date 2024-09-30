@@ -60,7 +60,7 @@ resource networkInterface 'Microsoft.Network/networkInterfaces@2024-01-01' = {
 }
 
 @description('Public IP configurations for source and target')
-module vmPip './pip.bicep' = if (publicIp) {
+module vmPip '../NETWORK/pip.bicep' = if (publicIp) {
   name: '${Name}-pip'
   scope: resourceGroup()
   params: {

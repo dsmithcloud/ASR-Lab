@@ -13,7 +13,7 @@ var Name = '${namePrefix}-${location}-${nameSuffix}'
 param bastionSubnetId string
 param logAnalyticsWorkspaceId string
 
-module bastionpublicIp './pip.bicep' = {
+module bastionpublicIp '../NETWORK/pip.bicep' = {
   name: '${Name}-pip'
   scope: resourceGroup()
   params: {
