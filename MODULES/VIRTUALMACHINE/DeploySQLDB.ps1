@@ -1,3 +1,11 @@
+param (
+    [string] $adminUsername,
+    [securestring] $adminPassword
+)
+
+# Set the credentials
+$credential = New-Object System.Management.Automation.PSCredential($adminUsername, $adminPassword)
+
 # Get the disk you attached
 $disk = Get-Disk | Where-Object PartitionStyle -Eq 'RAW'
 
@@ -38,4 +46,4 @@ MOVE N'AdventureWorksLT2019_Log' TO N'$logFile',
 NOUNLOAD, STATS = 10
 "@
 
-Invoke-Sqlcmd -ServerInstance . -Query $restoreQuery -TrustServerCertificate
+Invoke-Sqlcmd -ServerInstance . -Query $restoreQuery -TrustServerCertificate -Credential $credential
