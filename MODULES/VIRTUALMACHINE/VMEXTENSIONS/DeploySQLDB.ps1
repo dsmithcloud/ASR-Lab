@@ -65,7 +65,6 @@ $restoreQuery | Out-File -FilePath $sqlFilePath
 $scriptBlock = {
     param ($sqlFilePath)
     SqlServer\Invoke-Sqlcmd -ServerInstance . -InputFile $sqlFilePath -TrustServerCertificate
-    Read-Host 'Press Enter to exit'
 }
 
 # Run the script block as the other user
