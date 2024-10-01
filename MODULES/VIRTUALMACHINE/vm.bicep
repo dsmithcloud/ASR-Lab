@@ -166,7 +166,7 @@ resource nicDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
 @description('Custom script extension to deploy AdventureWorks database to SQL Server')
 resource AdventureWorks 'Microsoft.Compute/virtualMachines/extensions@2021-07-01' = if (purpose == 'sql') {
   parent: virtualMachine
-  name: 'customScript'
+  name: 'SQL-with-AdventureWorks'
   location: location
   properties: {
     publisher: 'Microsoft.Compute'
