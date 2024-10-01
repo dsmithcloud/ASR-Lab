@@ -127,6 +127,9 @@ resource virtualMachine 'Microsoft.Compute/virtualMachines@2024-03-01' = {
       }
     }
   }
+  identity: {
+    type: 'SystemAssigned'
+  }
 }
 
 @description('Custom script extension to deploy IIS')
@@ -175,14 +178,12 @@ resource AdventureWorks 'Microsoft.Compute/virtualMachines/extensions@2024-07-01
     autoUpgradeMinorVersion: true
     protectedSettings: {
       script: 'DeploySQLDB.ps1'
-      adminUsername: adminUsername
-      adminPassword: adminPassword
+      commandToExecute: 'powershell -ExecutionPolicy Unrestricted -File DeploySQLDB.ps1 -AdminUsername "${adminUsername}" -AdminPassword "${adminPassword}"'
     }
     settings: {
       fileUris: [
         'https://raw.githubusercontent.com/dsmithcloud/ASR-Lab/refs/heads/main/MODULES/VIRTUALMACHINE/VMEXTENSIONS/DeploySQLDB.ps1'
       ]
-      commandToExecute: 'powershell -ExecutionPolicy Unrestricted -File DeploySQLDB.ps1'
     }
   }
 }
@@ -205,3 +206,4 @@ resource AdventureWorks 'Microsoft.Compute/virtualMachines/extensions@2024-07-01
 output vmId string = virtualMachine.id
 output vmNicId string = networkInterface.id
 output vmName string = virtualMachine.name
+output vmMI string = virtualMachine.identity.principalId
