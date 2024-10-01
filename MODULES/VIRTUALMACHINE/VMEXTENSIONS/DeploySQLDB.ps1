@@ -9,17 +9,26 @@ $credential = New-Object System.Management.Automation.PSCredential($adminUsernam
 # Get the disk you attached
 $disk = Get-Disk -ErrorAction SilentlyContinue | Where-Object PartitionStyle -Eq 'RAW'
 
-# Initialize the disk
-Initialize-Disk -Number $disk.Number -ErrorAction SilentlyContinue
+if ($disk) {
+    # Initialize the disk
+    Initialize-Disk -Number $disk.Number -ErrorAction SilentlyContinue
 
-# Create a new partition
-$partition = New-Partition -DiskNumber $disk.Number -UseMaximumSize -AssignDriveLetter -ErrorAction SilentlyContinue
+    # Create a new partition
+    $partition = New-Partition -DiskNumber $disk.Number -UseMaximumSize -AssignDriveLetter -ErrorAction SilentlyContinue
 
-# Format the partition
-Format-Volume -Partition $partition -FileSystem NTFS -NewFileSystemLabel "DataDisk" -Confirm:$false -ErrorAction SilentlyContinue
+    # Format the partition
+    Format-Volume -Partition $partition -FileSystem NTFS -NewFileSystemLabel "DataDisk" -Confirm:$false -ErrorAction SilentlyContinue
 
-# Output the drive letter
-$driveletter = "$($partition.DriveLetter):"
+    # Output the drive letter
+    $driveletter = "$($partition.DriveLetter):"
+}
+else {
+    # Get the existing partition
+    $partition = Get-Partition -DriveLetter (Get-Volume -FileSystemLabel "DataDisk").DriveLetter
+
+    # Output the drive letter
+    $driveletter = "$($partition.DriveLetter):"
+}
 
 # Create DB folder on the new drive
 $dataPath = New-Item -Path "${driveletter}\SQLData" -ItemType Directory
@@ -38,6 +47,8 @@ $databaseName = "AdventureWorksLT2019"
 $dataFile = "${dataPath}\AdventureWorksLT2019_Data.mdf"
 $logFile = "${dataPath}\AdventureWorksLT2019_Log.ldf"
 $backupPath = "${downloadPath}\AdventureWorksLT2019.bak"
+
+# Define the restore query
 $restoreQuery = @"
 RESTORE DATABASE [$databaseName]
 FROM DISK = N'$backupPath'
@@ -46,4 +57,16 @@ MOVE N'AdventureWorksLT2019_Log' TO N'$logFile',
 NOUNLOAD, STATS = 10
 "@
 
-SqlServer\Invoke-Sqlcmd -ServerInstance . -Query $restoreQuery -TrustServerCertificate -Credential $credential
+# Write the restore query to a new file
+$sqlFilePath = "${downloadPath}\RestoreDB.sql"
+$restoreQuery | Out-File -FilePath $sqlFilePath
+
+# Define the script block to run the SQL command
+$scriptBlock = {
+    param ($sqlFilePath)
+    SqlServer\Invoke-Sqlcmd -ServerInstance . -InputFile $sqlFilePath -TrustServerCertificate
+    Read-Host 'Press Enter to exit'
+}
+
+# Run the script block as the other user
+Invoke-Command -ScriptBlock $scriptBlock -ArgumentList $sqlFilePath -Credential $credential -ComputerName localhost
