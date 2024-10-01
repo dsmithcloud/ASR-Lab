@@ -7,16 +7,16 @@ param (
 $credential = New-Object System.Management.Automation.PSCredential($adminUsername, $adminPassword)
 
 # Get the disk you attached
-$disk = Get-Disk | Where-Object PartitionStyle -Eq 'RAW'
+$disk = Get-Disk -ErrorAction SilentlyContinue | Where-Object PartitionStyle -Eq 'RAW'
 
 # Initialize the disk
-Initialize-Disk -Number $disk.Number
+Initialize-Disk -Number $disk.Number -ErrorAction SilentlyContinue
 
 # Create a new partition
-$partition = New-Partition -DiskNumber $disk.Number -UseMaximumSize -AssignDriveLetter
+$partition = New-Partition -DiskNumber $disk.Number -UseMaximumSize -AssignDriveLetter -ErrorAction SilentlyContinue
 
 # Format the partition
-Format-Volume -Partition $partition -FileSystem NTFS -NewFileSystemLabel "DataDisk" -Confirm:$false
+Format-Volume -Partition $partition -FileSystem NTFS -NewFileSystemLabel "DataDisk" -Confirm:$false -ErrorAction SilentlyContinue
 
 # Output the drive letter
 $driveletter = "$($partition.DriveLetter):"
