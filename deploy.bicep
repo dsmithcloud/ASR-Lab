@@ -58,6 +58,19 @@ module asrvault './MODULES/SITERECOVERY/asrvault.bicep' = {
   ]
 }
 
+@description('Backup Vault in the source region')
+module backupvault './MODULES/SITERECOVERY/asrvault.bicep' = {
+  name: 'backupvault'
+  scope: sourceRG
+  params: {
+    namePrefix: parDeploymentPrefix
+    logAnalyticsWorkspaceId: logAnalytics.outputs.logAnalyticsWorkspaceId
+  }
+  dependsOn: [
+    logAnalytics
+  ]
+}
+
 @description('Automation Account for ASR')
 module automationacct './MODULES/SITERECOVERY/automation.bicep' = {
   name: 'asr-automationaccount'
