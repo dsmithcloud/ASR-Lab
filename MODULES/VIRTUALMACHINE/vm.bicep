@@ -180,7 +180,7 @@ resource AdventureWorks 'Microsoft.Compute/virtualMachines/extensions@2024-07-01
     }
     settings: {
       fileUris: [
-        'https://raw.githubusercontent.com/dsmithcloud/ASR-Lab/main/MODULES/VIRTUALMACHINE/VMEXTENSIONS/DeploySQLDB.ps1'
+        'https://raw.githubusercontent.com/dsmithcloud/ASR-Lab/refs/heads/main/MODULES/VIRTUALMACHINE/VMEXTENSIONS/DeploySQLDB.ps1'
       ]
       commandToExecute: 'powershell -ExecutionPolicy Unrestricted -File DeploySQLDB.ps1'
     }
