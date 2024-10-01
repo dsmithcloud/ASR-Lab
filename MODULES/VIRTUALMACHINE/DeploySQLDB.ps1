@@ -46,4 +46,4 @@ MOVE N'AdventureWorksLT2019_Log' TO N'$logFile',
 NOUNLOAD, STATS = 10
 "@
 
-Invoke-Sqlcmd -ServerInstance . -Query $restoreQuery -TrustServerCertificate -Credential $credential
+SqlServer\Invoke-Sqlcmd -ServerInstance . -Query $restoreQuery -TrustServerCertificate -Credential $credential
