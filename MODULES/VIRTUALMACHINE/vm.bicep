@@ -163,25 +163,24 @@ resource nicDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   }
 }
 
-// @description('Custom script extension to deploy AdventureWorks database to SQL Server')
-// resource AdventureWorks 'Microsoft.Compute/virtualMachines/extensions@2021-07-01' = if (purpose == 'sql') {
-//   parent: virtualMachine
-//   name: 'customScript'
-//   location: location
-//   properties: {
-//     publisher: 'Microsoft.Compute'
-//     type: 'CustomScriptExtension'
-//     typeHandlerVersion: '1.10'
-//     autoUpgradeMinorVersion: true
-//     settings: {
-//       fileUris: [
-//         'https://raw.githubusercontent.com/Microsoft/sql-server-samples/master/samples/databases/adventure-works/oltp-install-script/instawdb.bat'
-//         'https://github.com/Microsoft/sql-server-samples/releases/download/adventureworks/AdventureWorks2019.bak'
-//       ]
-//       commandToExecute: 'powershell -ExecutionPolicy Unrestricted -File instawdb.bat'
-//     }
-//   }
-// }
+@description('Custom script extension to deploy AdventureWorks database to SQL Server')
+resource AdventureWorks 'Microsoft.Compute/virtualMachines/extensions@2021-07-01' = if (purpose == 'sql') {
+  parent: virtualMachine
+  name: 'customScript'
+  location: location
+  properties: {
+    publisher: 'Microsoft.Compute'
+    type: 'CustomScriptExtension'
+    typeHandlerVersion: '1.10'
+    autoUpgradeMinorVersion: true
+    settings: {
+      fileUris: [
+        'https://raw.githubusercontent.com/dsmithcloud/ASR-Lab/main/MODULES/VIRTUALMACHINE/DeploySQLDB.ps1'
+      ]
+      commandToExecute: 'powershell -ExecutionPolicy Unrestricted -File DeploySQLDB.ps1'
+    }
+  }
+}
 
 // resource windowsDiagnostics 'Microsoft.Compute/virtualMachines/extensions@2024-03-01' = {
 //   name: 'IaaSDiagnostics'
