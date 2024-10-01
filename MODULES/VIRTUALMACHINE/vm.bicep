@@ -140,7 +140,7 @@ resource iisExtension 'Microsoft.Compute/virtualMachines/extensions@2024-03-01' 
     typeHandlerVersion: '1.10'
     settings: {
       fileUris: [
-        'https://raw.githubusercontent.com/dsmithcloud/ASR-Lab/refs/heads/main/MODULES/VIRTUALMACHINE/DeployIIS.ps1'
+        'https://raw.githubusercontent.com/dsmithcloud/ASR-Lab/refs/heads/main/MODULES/VIRTUALMACHINE/VMEXTENSIONS/DeployIIS.ps1'
       ]
       commandToExecute: 'powershell -ExecutionPolicy Unrestricted -File DeployIIS.ps1'
     }
@@ -164,7 +164,7 @@ resource nicDiag 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
 }
 
 @description('Custom script extension to deploy AdventureWorks database to SQL Server')
-resource AdventureWorks 'Microsoft.Compute/virtualMachines/extensions@2021-07-01' = if (purpose == 'sql') {
+resource AdventureWorks 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = if (purpose == 'sql') {
   parent: virtualMachine
   name: 'SQL-with-AdventureWorks'
   location: location
@@ -173,14 +173,16 @@ resource AdventureWorks 'Microsoft.Compute/virtualMachines/extensions@2021-07-01
     type: 'CustomScriptExtension'
     typeHandlerVersion: '1.10'
     autoUpgradeMinorVersion: true
+    protectedSettings: {
+      script: 'DeploySQLDB.ps1'
+      adminUsername: adminUsername
+      adminPassword: adminPassword
+    }
     settings: {
       fileUris: [
-        'https://raw.githubusercontent.com/dsmithcloud/ASR-Lab/main/MODULES/VIRTUALMACHINE/DeploySQLDB.ps1'
+        'https://raw.githubusercontent.com/dsmithcloud/ASR-Lab/main/MODULES/VIRTUALMACHINE/VMEXTENSIONS/DeploySQLDB.ps1'
       ]
-      commandToExecute: 'powershell -ExecutionPolicy Unrestricted -File DeploySQLDB.ps1 -adminUsername ${adminUsername} -adminPassword $(adminPassword)'
-    }
-    protectedSettings: {
-      adminPassword: adminPassword
+      commandToExecute: 'powershell -ExecutionPolicy Unrestricted -File DeploySQLDB.ps1'
     }
   }
 }

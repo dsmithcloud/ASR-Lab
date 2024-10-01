@@ -126,7 +126,7 @@ module peerTargetToSource './MODULES/NETWORK/vnetpeer.bicep' = {
 }
 
 @description('Azure Bastion in the source region')
-module bastion './MODULES/VIRTUALMACHINE/bastion.bicep' = {
+module bastion './MODULES/BASTION/bastion.bicep' = {
   name: 'bastion'
   scope: sourceRG
   params: {
@@ -191,7 +191,7 @@ module lbTarget './MODULES/NETWORK/loadbalancer.bicep' = {
 }
 
 @description('VM deployments')
-var adminUsername = 'azadmin'
+var vmAdminUsername = 'azadmin'
 module vmDeployments './MODULES/VIRTUALMACHINE/vm.bicep' = [
   for vmConfig in vmConfigs: if (vmConfig.deploy) {
     name: 'vm-${vmConfig.nameSuffix}'
@@ -209,7 +209,7 @@ module vmDeployments './MODULES/VIRTUALMACHINE/vm.bicep' = [
       osDiskSize: vmConfig.osDiskSize
       dataDiskSize: vmConfig.dataDiskSize
       osType: vmConfig.osType
-      adminUsername: adminUsername
+      adminUsername: vmAdminUsername
       adminPassword: vmAdminPassword
       imagePublisher: vmConfig.imagePublisher
       imageOffer: vmConfig.imageOffer
@@ -236,6 +236,6 @@ module trafficManager './MODULES/NETWORK/trafficmanager.bicep' = {
 }
 
 // // Output
-output vmUserName string = adminUsername
+output vmUserName string = vmAdminUsername
 output fqdn string = trafficManager.outputs.trafficManagerfqdn
 // output vmNames string = vmNames

@@ -31,8 +31,8 @@ $defaultSitePath = "C:\inetpub\wwwroot"
 # Write the HTML, CSS, background image, and powershell script content to the default site
 Set-Content -Path "${defaultSitePath}\index.html" -Value $htmlContent
 Set-content -path "${defaultSitePath}\index.css" -Value $cssContent
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/dsmithcloud/ASR-Lab/main/MODULES/VIRTUALMACHINE/asrdemo.png" -OutFile "${defaultSitePath}\asrdemo.png"
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/dsmithcloud/ASR-Lab/main/MODULES/VIRTUALMACHINE/update-htmlcontent.ps1" -OutFile "${defaultSitePath}\update-htmlcontent.ps1"
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/dsmithcloud/ASR-Lab/main/MODULES/VIRTUALMACHINE/VMEXTENSIONS/asrdemo.png" -OutFile "${defaultSitePath}\asrdemo.png"
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/dsmithcloud/ASR-Lab/main/MODULES/VIRTUALMACHINE/VMEXTENSIONS/update-htmlcontent.ps1" -OutFile "${defaultSitePath}\update-htmlcontent.ps1"
 
 & "${defaultSitePath}\update-htmlcontent.ps1"
 
