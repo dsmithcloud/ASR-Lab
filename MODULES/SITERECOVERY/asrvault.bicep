@@ -22,6 +22,10 @@ resource recoveryServicesVault 'Microsoft.RecoveryServices/vaults@2024-04-01' = 
   location: location
   properties: {
     publicNetworkAccess: 'Enabled'
+    redundancySettings: {
+      crossRegionRestore: 'Enabled'
+      standardTierStorageRedundancy: 'GeoRedundant'
+    }
   }
   sku: {
     name: 'RS0'
