@@ -1,3 +1,6 @@
+param (
+    [int] $MaxRetry = 3
+)
 function Enter-Login {
     Write-Information ">>> Initiating a login" -InformationAction Continue
     Connect-AzAccount
@@ -152,7 +155,7 @@ $varParameters = ConvertFrom-Yaml -Yaml $(Get-Content -Path "./deployparam.yaml"
 $varParameters.add("varTimeStamp", (Get-Date).ToString("yyyy-MM-ddTHH.mm.ss"))
 
 #constants
-$conMaxRetryAttemptTransientErrorRetry = 3
+$conMaxRetryAttemptTransientErrorRetry = $MaxRetry
 $conRetry = $true
 $conRetryWaitTimeTransientErrorRetry = 10
 $conLoopCounter = 0
