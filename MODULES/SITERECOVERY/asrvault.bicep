@@ -26,6 +26,17 @@ resource recoveryServicesVault 'Microsoft.RecoveryServices/vaults@2024-04-01' = 
       crossRegionRestore: 'Enabled'
       standardTierStorageRedundancy: 'GeoRedundant'
     }
+    monitoringSettings: {
+      azureMonitorAlertSettings: {
+        alertsForAllFailoverIssues: 'Enabled'
+        alertsForAllJobFailures: 'Enabled'
+        alertsForAllReplicationIssues: 'Enabled'
+      }
+      classicAlertSettings: {
+        alertsForCriticalOperations: 'Disabled'
+        emailNotificationsForSiteRecovery: 'Disabled'
+      }
+    }
   }
   sku: {
     name: 'RS0'
