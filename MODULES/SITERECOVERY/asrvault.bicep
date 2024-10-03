@@ -11,7 +11,6 @@ AUTHOR/S: David Smith (CSA FSI)
 param namePrefix string
 var nameSuffix = 'asrvault'
 var location = resourceGroup().location
-// var unique = substring(uniqueString(resourceGroup().id), 0, 8)
 var Name = '${namePrefix}-${location}-${nameSuffix}'
 param logAnalyticsWorkspaceId string
 
@@ -43,6 +42,32 @@ resource recoveryServicesVault 'Microsoft.RecoveryServices/vaults@2024-04-01' = 
     tier: 'Standard'
   }
 }
+
+// Backup Configuration & Policies
+resource backupRsvConfig 'Microsoft.RecoveryServices/vaults/BackupConfig@2022-02-01' = {
+  parent: recoveryServicesVault
+  name: 'vaultconfig'
+  properties: {
+    enhancedSecurityState: 'Disabled'
+    isSoftDeleteFeatureStateEditable: true
+    softDeleteFeatureState: 'Disabled'
+  }
+}
+
+resource backupVlt 'Microsoft.DataProtection/backupVaults@2022-11-01-preview' = {
+  name: '${Name}-backupVault'
+  location: location
+  properties: {
+    storageSettings: [
+      {
+        datastoreType: 'VaultStore'
+        type: 'GeoRedundant'
+      }
+    ]
+  }
+}
+
+// replicaitonPolicies
 resource replicationPolicies 'Microsoft.RecoveryServices/vaults/replicationPolicies@2024-04-01' = {
   name: '24-hour-retention-policy'
   parent: recoveryServicesVault
