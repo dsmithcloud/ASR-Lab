@@ -1,7 +1,10 @@
 {
-    "name": "My Dev Container",
-    "image": "mcr.microsoft.com/devcontainers/base:jammy",
+    "name": "Dev Container with PowerShell, Azure CLI, and Bicep",
+    "image": "mcr.microsoft.com/vscode/devcontainers/base:ubuntu",
     "features": {
-        "ghcr.io/devcontainers/features/powershell:1": {}
-    }
+        "ghcr.io/devcontainers/features/powershell:1": {},
+        "ghcr.io/devcontainers/features/azure-cli:1": {},
+        "ghcr.io/devcontainers/features/bicep:1": {}
+    },
+    "postCreateCommand": "pwsh -c 'Install-Module -Name Az -Scope CurrentUser -Force'"
 }
