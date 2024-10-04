@@ -1,0 +1,7 @@
+{
+    "name": "My Dev Container",
+    "image": "mcr.microsoft.com/devcontainers/base:jammy",
+    "features": {
+        "ghcr.io/devcontainers/features/powershell:1": {}
+    }
+}
